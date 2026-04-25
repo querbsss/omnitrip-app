@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 
 import '../core/colors.dart';
-import 'widgets/omni_logo.dart';
 import 'widgets/pill_button.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
-  static const _collageEmojis = ['🏔️', '🏖️', '🌋', '🏝️', '🌅', '⛪'];
-  static const _collageColors = [
-    Color(0xFFB6D6CE),
-    Color(0xFFEED9B0),
-    Color(0xFFD8BFA8),
-    Color(0xFFB8D4DC),
-    Color(0xFFE8C5A8),
-    Color(0xFFC9D9C0),
+  static const _collageImages = <String>[
+    'assets/images/login_page/background/pexels-abinaya-palanichamy-2160399839-36696891.jpg',
+    'assets/images/login_page/background/pexels-alxs-6552924.jpg',
+    'assets/images/login_page/background/pexels-illiad-8705705.jpg',
+    'assets/images/login_page/background/pexels-jermaine-boyles-26651699-6797920.jpg',
+    'assets/images/login_page/background/pexels-jobzky-8022579.jpg',
   ];
 
   @override
@@ -31,24 +28,38 @@ class WelcomeScreen extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 16),
                       _Collage(
-                        height: isShort ? 140 : 180,
-                        emojis: _collageEmojis,
-                        colors: _collageColors,
+                        height: isShort ? 150 : 200,
+                        images: _collageImages,
                       ),
-                      const SizedBox(height: 28),
-                      const OmniLogo(size: 70, wordmarkSize: 32),
-                      const SizedBox(height: 24),
-                      const Text(
-                        'Your Smart\nTravel Planner',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                          height: 1.15,
+                      const SizedBox(height: 20),
+                      Transform.translate(
+                        offset: const Offset(-3.5, 0),
+                        child: Center(
+                          child: Image.asset(
+                            'assets/images/login_page/logo/logo_omnitrip.png',
+                            width: 280,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 0),
+                      Transform.translate(
+                        offset: const Offset(0, -8),
+                        child: const Center(
+                          child: Text(
+                            'Your Smart\nTravel Planner',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                              height: 1.15,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -100,12 +111,10 @@ class WelcomeScreen extends StatelessWidget {
 
 class _Collage extends StatelessWidget {
   final double height;
-  final List<String> emojis;
-  final List<Color> colors;
+  final List<String> images;
   const _Collage({
     required this.height,
-    required this.emojis,
-    required this.colors,
+    required this.images,
   });
 
   @override
@@ -146,13 +155,18 @@ class _Collage extends StatelessWidget {
   Widget _tile(int i, BorderRadius radius) {
     return Container(
       decoration: BoxDecoration(
-        color: colors[i % colors.length],
         borderRadius: radius,
-      ),
-      alignment: Alignment.center,
-      child: Text(
-        emojis[i % emojis.length],
-        style: const TextStyle(fontSize: 30),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 10,
+            offset: Offset(0, 3),
+          ),
+        ],
+        image: DecorationImage(
+          image: AssetImage(images[i % images.length]),
+          fit: BoxFit.cover,
+        ),
       ),
     );
   }

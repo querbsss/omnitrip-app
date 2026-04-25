@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/colors.dart';
 import '../data/models/travel_plan.dart';
 import 'widgets/insight_card.dart';
-import 'widgets/omni_logo.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/traffic_route_card.dart';
 import 'widgets/weather_day_card.dart';
@@ -33,11 +33,20 @@ class ResultsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bgCream,
         elevation: 0,
+        toolbarHeight: 160,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const OmniLogo(size: 32, wordmarkSize: 16),
+        title: Transform.translate(
+          offset: const Offset(-3, 0),
+          child: Image.asset(
+            'assets/images/login_page/logo/logo_omnitrip.png',
+            height: 140,
+            fit: BoxFit.contain,
+          ),
+        ),
       ),
       body: SafeArea(
         child: ListView(
@@ -99,7 +108,7 @@ class ResultsScreen extends StatelessWidget {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            const Icon(Icons.calendar_today_rounded,
+                            const Icon(HugeIcons.strokeRoundedCalendar03,
                                 size: 12, color: AppColors.tealDark),
                             const SizedBox(width: 4),
                             Text(
@@ -153,7 +162,7 @@ class ResultsScreen extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline_rounded,
+                    const Icon(HugeIcons.strokeRoundedInformationCircle,
                         size: 16, color: AppColors.tealDark),
                     const SizedBox(width: 8),
                     Expanded(
@@ -229,7 +238,7 @@ class ResultsScreen extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.check_rounded,
+                          const Icon(HugeIcons.strokeRoundedTick02,
                               size: 14, color: AppColors.tealPrimary),
                           const SizedBox(width: 6),
                           Text(
@@ -294,7 +303,7 @@ class ResultsScreen extends StatelessWidget {
 
             PillButton(
               label: 'Plan Another Trip',
-              icon: Icons.refresh_rounded,
+              icon: HugeIcons.strokeRoundedRefresh,
               onPressed: () => Navigator.pop(context),
             ),
           ],
@@ -340,7 +349,7 @@ class _RouteDetails extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.directions_bus_filled_outlined,
+              const Icon(HugeIcons.strokeRoundedBus01,
                   size: 16, color: AppColors.tealDark),
               const SizedBox(width: 6),
               Text(
@@ -409,7 +418,7 @@ class _RouteDetails extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.warning_amber_rounded,
+                  const Icon(HugeIcons.strokeRoundedAlert02,
                       size: 14, color: Color(0xFFD97706)),
                   const SizedBox(width: 6),
                   Expanded(

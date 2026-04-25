@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../core/colors.dart';
 import '../core/validators.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/session_service.dart';
-import 'widgets/omni_logo.dart';
 import 'widgets/pill_button.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: AppColors.bgCream,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
           onPressed: () => Navigator.maybePop(context),
         ),
       ),
@@ -81,8 +81,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Center(child: OmniLogo(size: 56, wordmarkSize: 24)),
-                const SizedBox(height: 24),
+                Transform.translate(
+                  offset: const Offset(-3, 0),
+                  child: Center(
+                    child: Image.asset(
+                      'assets/images/login_page/logo/logo_omnitrip.png',
+                      width: 200,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
                 const Text(
                   'Create account',
                   textAlign: TextAlign.center,
@@ -104,7 +113,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Name',
                     hintText: 'Your name',
-                    prefixIcon: Icon(Icons.person_outline_rounded),
+                    prefixIcon: Icon(HugeIcons.strokeRoundedUser),
                   ),
                   validator: (v) => Validators.required(v, 'Name'),
                   textInputAction: TextInputAction.next,
@@ -116,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     hintText: 'you@example.com',
-                    prefixIcon: Icon(Icons.email_outlined),
+                    prefixIcon: Icon(HugeIcons.strokeRoundedMail01),
                   ),
                   validator: Validators.email,
                   textInputAction: TextInputAction.next,
@@ -128,11 +137,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     hintText: 'At least 6 characters',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    prefixIcon: const Icon(HugeIcons.strokeRoundedSquareLock02),
                     suffixIcon: IconButton(
                       icon: Icon(_obscure1
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined),
+                          ? HugeIcons.strokeRoundedView
+                          : HugeIcons.strokeRoundedViewOffSlash),
                       onPressed: () => setState(() => _obscure1 = !_obscure1),
                     ),
                   ),
@@ -146,11 +155,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   decoration: InputDecoration(
                     labelText: 'Confirm Password',
                     hintText: 'Re-enter your password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
+                    prefixIcon: const Icon(HugeIcons.strokeRoundedSquareLock02),
                     suffixIcon: IconButton(
                       icon: Icon(_obscure2
-                          ? Icons.visibility_outlined
-                          : Icons.visibility_off_outlined),
+                          ? HugeIcons.strokeRoundedView
+                          : HugeIcons.strokeRoundedViewOffSlash),
                       onPressed: () => setState(() => _obscure2 = !_obscure2),
                     ),
                   ),

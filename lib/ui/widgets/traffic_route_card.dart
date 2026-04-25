@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/colors.dart';
 import '../../data/models/route_info.dart';
@@ -87,7 +88,7 @@ class TrafficRouteCard extends StatelessWidget {
                     bottom: 8,
                     child: Row(
                       children: [
-                        Icon(Icons.map_outlined,
+                        Icon(HugeIcons.strokeRoundedMaps,
                             size: 14, color: AppColors.tealDark),
                         SizedBox(width: 4),
                         Text(

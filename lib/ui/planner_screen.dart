@@ -1,13 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
 
 import '../core/colors.dart';
 import '../data/datasets/destinations.dart';
 import '../data/models/destination.dart';
+import '../data/services/auth_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'widgets/input_card.dart';
-import 'widgets/omni_logo.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/purpose_card.dart';
 import 'widgets/toggle_row.dart';
@@ -25,6 +28,22 @@ class _PlannerScreenState extends State<PlannerScreen> {
   String? _purpose;
   bool _weatherAware = true;
   bool _trafficAware = true;
+  String? _firstName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFirstName();
+  }
+
+  Future<void> _loadFirstName() async {
+    final email = await SessionService().getSessionEmail();
+    if (email == null) return;
+    final user = await AuthService().findByEmail(email);
+    if (!mounted || user == null) return;
+    final first = user.name.trim().split(RegExp(r'\s+')).first;
+    setState(() => _firstName = first.isEmpty ? null : first);
+  }
 
   Future<void> _pickDestination() async {
     final selected = await showModalBottomSheet<Destination>(
@@ -120,11 +139,16 @@ class _PlannerScreenState extends State<PlannerScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgCream,
         elevation: 0,
-        title: const OmniLogo(size: 36, wordmarkSize: 18),
+        toolbarHeight: 100,
+        title: Image.asset(
+          'assets/images/login_page/logo/logo_omnitrip.png',
+          height: 80,
+          fit: BoxFit.contain,
+        ),
         actions: [
           IconButton(
             tooltip: 'Logout',
-            icon: const Icon(Icons.logout_rounded),
+            icon: const Icon(HugeIcons.strokeRoundedLogout01),
             onPressed: _logout,
           ),
         ],
@@ -133,6 +157,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           children: [
+            _GreetingBanner(name: _firstName),
+            const SizedBox(height: 6),
             const Text(
               'Your trips with weather, traffic, and local insights. All in One Place.',
               style: TextStyle(
@@ -143,7 +169,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
             const SizedBox(height: 18),
             InputCard(
-              icon: Icons.location_on_outlined,
+              icon: HugeIcons.strokeRoundedLocation01,
               label: 'Where to?',
               hint: 'e.g., Cebu City, Philippines',
               value: destLabel,
@@ -151,7 +177,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
             const SizedBox(height: 12),
             InputCard(
-              icon: Icons.calendar_month_outlined,
+              icon: HugeIcons.strokeRoundedCalendar03,
               label: 'Travel Date',
               hint: 'Select your date',
               value: dateLabel,
@@ -171,7 +197,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               children: [
                 Expanded(
                   child: PurposeCard(
-                    icon: Icons.beach_access_rounded,
+                    icon: HugeIcons.strokeRoundedBeach,
                     label: 'Vacation',
                     selected: _purpose == 'vacation',
                     onTap: () => setState(() => _purpose = 'vacation'),
@@ -180,7 +206,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: PurposeCard(
-                    icon: Icons.favorite_outline_rounded,
+                    icon: HugeIcons.strokeRoundedFavourite,
                     label: 'Date Idea',
                     selected: _purpose == 'date_idea',
                     onTap: () => setState(() => _purpose = 'date_idea'),
@@ -189,7 +215,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: PurposeCard(
-                    icon: Icons.business_center_outlined,
+                    icon: HugeIcons.strokeRoundedBriefcase01,
                     label: 'School/\nBusiness',
                     selected: _purpose == 'school_business',
                     onTap: () =>
@@ -209,14 +235,14 @@ class _PlannerScreenState extends State<PlannerScreen> {
             ),
             const SizedBox(height: 8),
             ToggleRow(
-              icon: Icons.cloud_outlined,
+              icon: HugeIcons.strokeRoundedCloud,
               title: 'Include Weather Forecast',
               value: _weatherAware,
               onChanged: (v) => setState(() => _weatherAware = v),
             ),
             const SizedBox(height: 4),
             ToggleRow(
-              icon: Icons.directions_car_outlined,
+              icon: HugeIcons.strokeRoundedCar01,
               title: 'Check Traffic & Routes',
               value: _trafficAware,
               onChanged: (v) => setState(() => _trafficAware = v),
@@ -225,9 +251,72 @@ class _PlannerScreenState extends State<PlannerScreen> {
             PillButton(
               label: 'Generate Smart Plan',
               onPressed: _generate,
-              icon: Icons.auto_awesome_rounded,
+              icon: HugeIcons.strokeRoundedSparkles,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GreetingBanner extends StatefulWidget {
+  final String? name;
+  const _GreetingBanner({required this.name});
+
+  @override
+  State<_GreetingBanner> createState() => _GreetingBannerState();
+}
+
+class _GreetingBannerState extends State<_GreetingBanner> {
+  static const _templates = <String>[
+    'Saan Tayo Punta, {name}?',
+    'Oh {name}, i-set na yan!',
+    'Deserve mo gumala {name}!',
+  ];
+
+  int _idx = 0;
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
+      if (!mounted) return;
+      setState(() => _idx = (_idx + 1) % _templates.length);
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final name = widget.name ?? 'Traveler';
+    final text = _templates[_idx].replaceAll('{name}', name);
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 450),
+      transitionBuilder: (child, animation) => FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0, 0.15),
+            end: Offset.zero,
+          ).animate(animation),
+          child: child,
+        ),
+      ),
+      child: Text(
+        text,
+        key: ValueKey<int>(_idx),
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textDark,
+          height: 1.2,
         ),
       ),
     );
@@ -293,7 +382,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close_rounded),
+                    icon: const Icon(HugeIcons.strokeRoundedCancel01),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -304,7 +393,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
               child: TextField(
                 onChanged: (v) => setState(() => _query = v),
                 decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search_rounded),
+                  prefixIcon: Icon(HugeIcons.strokeRoundedSearch01),
                   hintText: 'Search city, province, region…',
                 ),
               ),
@@ -367,7 +456,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                                     ],
                                   ),
                                 ),
-                                const Icon(Icons.chevron_right_rounded,
+                                const Icon(HugeIcons.strokeRoundedArrowRight01,
                                     color: AppColors.textSubtle),
                               ],
                             ),

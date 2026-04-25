@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../core/colors.dart';
 import '../core/validators.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/session_service.dart';
-import 'widgets/omni_logo.dart';
+import 'widgets/animated_login_background.dart';
 import 'widgets/pill_button.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -63,99 +64,138 @@ class _LoginScreenState extends State<LoginScreen> {
         backgroundColor: AppColors.bgCream,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
+          icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
           onPressed: () => Navigator.maybePop(context),
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Center(child: OmniLogo(size: 56, wordmarkSize: 24)),
-                const SizedBox(height: 28),
-                const Text(
-                  'Welcome back',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Log in to continue planning your trip.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: AppColors.textMuted, fontSize: 13),
-                ),
-                const SizedBox(height: 32),
-                TextFormField(
-                  controller: _emailCtrl,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: const InputDecoration(
-                    labelText: 'Email',
-                    hintText: 'you@example.com',
-                    prefixIcon: Icon(Icons.email_outlined),
-                  ),
-                  validator: Validators.email,
-                  textInputAction: TextInputAction.next,
-                ),
-                const SizedBox(height: 14),
-                TextFormField(
-                  controller: _passCtrl,
-                  obscureText: _obscure,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    hintText: 'At least 6 characters',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscure
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                      ),
-                      onPressed: () => setState(() => _obscure = !_obscure),
-                    ),
-                  ),
-                  validator: Validators.password,
-                  onFieldSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: 28),
-                PillButton(
-                  label: 'Log In',
-                  onPressed: _submit,
-                  loading: _busy,
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          children: [
+            const Positioned.fill(child: AnimatedLoginBackground()),
+            SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const Text(
-                      "Don't have an account? ",
-                      style: TextStyle(color: AppColors.textMuted),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.pushReplacementNamed(
-                        context,
-                        '/register',
-                      ),
-                      child: const Text(
-                        'Register',
-                        style: TextStyle(
-                          color: AppColors.tealDark,
-                          fontWeight: FontWeight.w700,
+                    const SizedBox(height: 8),
+                    Transform.translate(
+                      offset: const Offset(-3, 0),
+                      child: Center(
+                        child: Image.asset(
+                          'assets/images/login_page/logo/logo_omnitrip.png',
+                          width: 200,
+                          fit: BoxFit.contain,
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
+                      decoration: BoxDecoration(
+                        color: AppColors.bgCream.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: AppColors.shadow,
+                            blurRadius: 18,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Welcome back',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Log in to continue planning your trip.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: AppColors.textMuted,
+                              fontSize: 13,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          TextFormField(
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              hintText: 'you@example.com',
+                              prefixIcon: Icon(HugeIcons.strokeRoundedMail01),
+                            ),
+                            validator: Validators.email,
+                            textInputAction: TextInputAction.next,
+                          ),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _passCtrl,
+                            obscureText: _obscure,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              hintText: 'At least 6 characters',
+                              prefixIcon: const Icon(
+                                HugeIcons.strokeRoundedSquareLock02,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscure
+                                      ? HugeIcons.strokeRoundedView
+                                      : HugeIcons.strokeRoundedViewOffSlash,
+                                ),
+                                onPressed: () =>
+                                    setState(() => _obscure = !_obscure),
+                              ),
+                            ),
+                            validator: Validators.password,
+                            onFieldSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: 24),
+                          PillButton(
+                            label: 'Log In',
+                            onPressed: _submit,
+                            loading: _busy,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Don't have an account? ",
+                                style: TextStyle(color: AppColors.textMuted),
+                              ),
+                              TextButton(
+                                onPressed: () => Navigator.pushReplacementNamed(
+                                  context,
+                                  '/register',
+                                ),
+                                child: const Text(
+                                  'Register',
+                                  style: TextStyle(
+                                    color: AppColors.tealDark,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );

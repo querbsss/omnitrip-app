@@ -54,7 +54,7 @@ class PurposeCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: selected ? AppColors.tealDark : AppColors.textDark,
+                color: selected ? AppColors.tealDark : AppColors.textDark,   // pede pa ma update
                 height: 1.15,
               ),
             ),

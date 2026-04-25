@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 enum WeatherCondition { sunny, partlyCloudy, cloudy, rainy, stormy }
 
@@ -20,15 +21,15 @@ class WeatherDay {
   IconData get icon {
     switch (condition) {
       case WeatherCondition.sunny:
-        return Icons.wb_sunny_rounded;
+        return HugeIcons.strokeRoundedSun03;
       case WeatherCondition.partlyCloudy:
-        return Icons.wb_cloudy_outlined;
+        return HugeIcons.strokeRoundedCloud;
       case WeatherCondition.cloudy:
-        return Icons.cloud_rounded;
+        return HugeIcons.strokeRoundedCloud;
       case WeatherCondition.rainy:
-        return Icons.umbrella_rounded;
+        return HugeIcons.strokeRoundedUmbrella;
       case WeatherCondition.stormy:
-        return Icons.thunderstorm_rounded;
+        return HugeIcons.strokeRoundedCloudFastWind;
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/colors.dart';
 
@@ -86,7 +87,7 @@ class InputCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded,
+            const Icon(HugeIcons.strokeRoundedArrowRight01,
                 color: AppColors.textSubtle, size: 20),
           ],
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hugeicons/hugeicons.dart';
 
 import '../../core/colors.dart';
 import '../../data/models/activity.dart';
@@ -74,7 +75,7 @@ class InsightCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.schedule_rounded,
+                    const Icon(HugeIcons.strokeRoundedClock01,
                         size: 11, color: AppColors.textMuted),
                     const SizedBox(width: 3),
                     Expanded(
