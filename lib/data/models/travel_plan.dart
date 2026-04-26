@@ -1,4 +1,5 @@
 import 'activity.dart';
+import 'cost_estimate.dart';
 import 'destination.dart';
 import 'route_info.dart';
 import 'weather.dart';
@@ -14,6 +15,10 @@ class TravelPlan {
   final List<TravelActivity> activities;
   final List<String> packingTips;
   final List<String> insights;
+  final String originLocation;
+  final int travelers;
+  final String transportMode;
+  final CostEstimate costEstimate;
 
   const TravelPlan({
     required this.destination,
@@ -26,5 +31,9 @@ class TravelPlan {
     required this.activities,
     required this.packingTips,
     required this.insights,
+    required this.originLocation,
+    required this.travelers,
+    required this.transportMode,
+    required this.costEstimate,
   });
 }

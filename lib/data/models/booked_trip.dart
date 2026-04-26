@@ -9,6 +9,9 @@ class BookedTrip {
   final bool trafficAware;
   final String notes;
   final DateTime createdAt;
+  final String originLocation;
+  final int travelers;
+  final String transportMode;
 
   const BookedTrip({
     required this.id,
@@ -21,6 +24,9 @@ class BookedTrip {
     required this.trafficAware,
     required this.notes,
     required this.createdAt,
+    this.originLocation = '',
+    this.travelers = 1,
+    this.transportMode = 'commute',
   });
 
   BookedTrip copyWith({
@@ -30,6 +36,9 @@ class BookedTrip {
     bool? weatherAware,
     bool? trafficAware,
     String? notes,
+    String? originLocation,
+    int? travelers,
+    String? transportMode,
   }) {
     return BookedTrip(
       id: id,
@@ -42,6 +51,9 @@ class BookedTrip {
       trafficAware: trafficAware ?? this.trafficAware,
       notes: notes ?? this.notes,
       createdAt: createdAt,
+      originLocation: originLocation ?? this.originLocation,
+      travelers: travelers ?? this.travelers,
+      transportMode: transportMode ?? this.transportMode,
     );
   }
 
@@ -56,6 +68,9 @@ class BookedTrip {
         trafficAware: json['trafficAware'] as bool,
         notes: (json['notes'] as String?) ?? '',
         createdAt: DateTime.parse(json['createdAt'] as String),
+        originLocation: (json['originLocation'] as String?) ?? '',
+        travelers: (json['travelers'] as int?) ?? 1,
+        transportMode: (json['transportMode'] as String?) ?? 'commute',
       );
 
   Map<String, dynamic> toJson() => {
@@ -69,6 +84,9 @@ class BookedTrip {
         'trafficAware': trafficAware,
         'notes': notes,
         'createdAt': createdAt.toIso8601String(),
+        'originLocation': originLocation,
+        'travelers': travelers,
+        'transportMode': transportMode,
       };
 
   static String purposeLabel(String purpose) {
@@ -81,6 +99,17 @@ class BookedTrip {
         return 'School / Business';
       default:
         return purpose;
+    }
+  }
+
+  static String transportLabel(String mode) {
+    switch (mode) {
+      case 'commute':
+        return 'Public Commute';
+      case 'private':
+        return 'Private Vehicle';
+      default:
+        return mode;
     }
   }
 }
