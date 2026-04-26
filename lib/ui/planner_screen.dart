@@ -10,6 +10,7 @@ import '../data/models/destination.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
+import 'results_args.dart';
 import 'widgets/input_card.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/purpose_card.dart';
@@ -102,7 +103,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       weatherAware: _weatherAware,
       trafficAware: _trafficAware,
     );
-    Navigator.pushNamed(context, '/results', arguments: plan);
+    Navigator.pushNamed(context, '/results', arguments: ResultsArgs(plan));
   }
 
   void _toast(String msg) {
@@ -140,12 +141,18 @@ class _PlannerScreenState extends State<PlannerScreen> {
         backgroundColor: AppColors.bgCream,
         elevation: 0,
         toolbarHeight: 100,
+        automaticallyImplyLeading: false,
         title: Image.asset(
           'assets/images/login_page/logo/logo_omnitrip.png',
           height: 80,
           fit: BoxFit.contain,
         ),
         actions: [
+          IconButton(
+            tooltip: 'Booked Trips',
+            icon: const Icon(HugeIcons.strokeRoundedBookmark02),
+            onPressed: () => Navigator.pushNamed(context, '/booked'),
+          ),
           IconButton(
             tooltip: 'Logout',
             icon: const Icon(HugeIcons.strokeRoundedLogout01),

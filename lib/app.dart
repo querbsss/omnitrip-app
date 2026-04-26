@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'core/theme.dart';
+import 'ui/booked_trips_screen.dart';
 import 'ui/login_screen.dart';
 import 'ui/planner_screen.dart';
 import 'ui/register_screen.dart';
@@ -24,6 +25,7 @@ class OmniTripApp extends StatelessWidget {
         '/register': (_) => const RegisterScreen(),
         '/planner': (_) => const PlannerScreen(),
         '/results': (_) => const ResultsScreen(),
+        '/booked': (_) => const BookedTripsScreen(),
       },
       builder: (context, child) {
         // Constrain UI to a phone-like frame on wide (web/desktop) viewports.

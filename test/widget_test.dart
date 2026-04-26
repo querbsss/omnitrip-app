@@ -7,7 +7,7 @@ void main() {
     await tester.pumpWidget(const OmniTripApp(startLoggedIn: false));
     await tester.pumpAndSettle();
 
-    expect(find.text('OmniTrip'), findsWidgets);
+    expect(find.textContaining('Travel Planner'), findsOneWidget);
     expect(find.text('Get Started'), findsOneWidget);
     expect(find.text('Log In'), findsOneWidget);
   });

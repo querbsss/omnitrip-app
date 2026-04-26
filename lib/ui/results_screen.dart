@@ -4,14 +4,25 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/colors.dart';
+import '../data/models/booked_trip.dart';
 import '../data/models/travel_plan.dart';
+import '../data/services/booked_trips_service.dart';
+import '../data/services/session_service.dart';
+import 'results_args.dart';
 import 'widgets/insight_card.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/traffic_route_card.dart';
 import 'widgets/weather_day_card.dart';
 
-class ResultsScreen extends StatelessWidget {
+class ResultsScreen extends StatefulWidget {
   const ResultsScreen({super.key});
+
+  @override
+  State<ResultsScreen> createState() => _ResultsScreenState();
+}
+
+class _ResultsScreenState extends State<ResultsScreen> {
+  String? _savedTripId;
 
   Future<void> _openMap(BuildContext context, TravelPlan plan) async {
     final url = Uri.parse(plan.destination.mapLink);
@@ -23,10 +34,201 @@ class ResultsScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _saveTrip(TravelPlan plan) async {
+    final email = await SessionService().getSessionEmail();
+    if (email == null || !mounted) return;
+
+    final result = await showModalBottomSheet<_SaveTripResult>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgCream,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => _SaveTripSheet(plan: plan),
+    );
+    if (result == null || !mounted) return;
+
+    final trip = await BookedTripsService().add(
+      email: email,
+      title: result.title,
+      destinationId: plan.destination.id,
+      travelDate: plan.travelDate,
+      purpose: plan.purpose,
+      weatherAware: plan.weatherAware,
+      trafficAware: plan.trafficAware,
+      notes: result.notes,
+    );
+    if (!mounted) return;
+    setState(() => _savedTripId = trip.id);
+    await _showCongratsDialog(plan, trip);
+  }
+
+  Future<void> _showCongratsDialog(TravelPlan plan, BookedTrip trip) async {
+    final dateLabel = DateFormat('EEE, MMM d, y').format(plan.travelDate);
+    final highs = plan.forecast.days
+        .map((d) => d.highC)
+        .reduce((a, b) => a > b ? a : b);
+    final lows = plan.forecast.days
+        .map((d) => d.lowC)
+        .reduce((a, b) => a < b ? a : b);
+    final goToBooked = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Dialog(
+        backgroundColor: AppColors.bgCream,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: AppColors.tealMuted,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    HugeIcons.strokeRoundedCheckmarkCircle02,
+                    size: 36,
+                    color: AppColors.tealDark,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                const Text(
+                  'Trip Saved!',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  trip.title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.tealDark,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: AppColors.cardWhite,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.border),
+                  ),
+                  child: Column(
+                    children: [
+                      _BreakdownRow(
+                        icon: HugeIcons.strokeRoundedLocation01,
+                        label: 'Destination',
+                        value:
+                            '${plan.destination.name}, ${plan.destination.region}',
+                      ),
+                      _BreakdownRow(
+                        icon: HugeIcons.strokeRoundedCalendar03,
+                        label: 'Travel Date',
+                        value: dateLabel,
+                      ),
+                      _BreakdownRow(
+                        icon: HugeIcons.strokeRoundedTag01,
+                        label: 'Purpose',
+                        value: BookedTrip.purposeLabel(plan.purpose),
+                      ),
+                      if (plan.weatherAware)
+                        _BreakdownRow(
+                          icon: HugeIcons.strokeRoundedSun03,
+                          label: 'Weather',
+                          value:
+                              '${plan.forecast.season} • $lows°–$highs°C',
+                        ),
+                      if (plan.trafficAware)
+                        _BreakdownRow(
+                          icon: HugeIcons.strokeRoundedCar01,
+                          label: 'Route',
+                          value:
+                              '${plan.routeInfo.transportMode} • ${plan.routeInfo.estimatedTravel}',
+                        ),
+                      _BreakdownRow(
+                        icon: HugeIcons.strokeRoundedSparkles,
+                        label: 'Activities',
+                        value:
+                            '${plan.activities.length} hand-picked for you',
+                        isLast: true,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '🎉  Congrats!',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.tealDark,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'You can find your trips in the\nBooked Trips page.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textMuted,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 18),
+                PillButton(
+                  label: 'View Booked Trips',
+                  icon: HugeIcons.strokeRoundedArrowRight01,
+                  onPressed: () => Navigator.pop(ctx, true),
+                ),
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text(
+                    'Stay here',
+                    style: TextStyle(
+                      color: AppColors.textMuted,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (!mounted) return;
+    if (goToBooked == true) {
+      Navigator.pushNamed(context, '/booked');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final plan = ModalRoute.of(context)!.settings.arguments as TravelPlan;
+    final args = ModalRoute.of(context)!.settings.arguments;
+    late final TravelPlan plan;
+    if (args is ResultsArgs) {
+      plan = args.plan;
+      _savedTripId ??= args.savedTripId;
+    } else {
+      plan = args as TravelPlan;
+    }
     final dateLabel = DateFormat('MMM d, y').format(plan.travelDate);
+    final alreadySaved = _savedTripId != null;
 
     return Scaffold(
       backgroundColor: AppColors.bgCream,
@@ -301,13 +503,216 @@ class ResultsScreen extends StatelessWidget {
               const SizedBox(height: 24),
             ],
 
-            PillButton(
-              label: 'Plan Another Trip',
-              icon: HugeIcons.strokeRoundedRefresh,
+            // ── Save trip ────────────────────
+            if (alreadySaved)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: AppColors.tealMuted,
+                  borderRadius: BorderRadius.circular(28),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(HugeIcons.strokeRoundedCheckmarkCircle02,
+                        size: 18, color: AppColors.tealDark),
+                    SizedBox(width: 8),
+                    Text(
+                      'Saved to Booked Trips',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.tealDark,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              PillButton(
+                label: 'Save to Booked Trips',
+                icon: HugeIcons.strokeRoundedBookmarkAdd01,
+                onPressed: () => _saveTrip(plan),
+              ),
+            const SizedBox(height: 10),
+            TextButton.icon(
               onPressed: () => Navigator.pop(context),
+              icon: const Icon(HugeIcons.strokeRoundedRefresh,
+                  size: 16, color: AppColors.tealDark),
+              label: const Text(
+                'Plan Another Trip',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.tealDark,
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SaveTripResult {
+  final String title;
+  final String notes;
+  const _SaveTripResult(this.title, this.notes);
+}
+
+class _SaveTripSheet extends StatefulWidget {
+  final TravelPlan plan;
+  const _SaveTripSheet({required this.plan});
+
+  @override
+  State<_SaveTripSheet> createState() => _SaveTripSheetState();
+}
+
+class _SaveTripSheetState extends State<_SaveTripSheet> {
+  late TextEditingController _title;
+  final _notes = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _title = TextEditingController(
+      text: 'Trip to ${widget.plan.destination.name}',
+    );
+  }
+
+  @override
+  void dispose() {
+    _title.dispose();
+    _notes.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final viewInsets = MediaQuery.of(context).viewInsets.bottom;
+    return Padding(
+      padding: EdgeInsets.only(bottom: viewInsets),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 44,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Save to Booked Trips',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'You\'ll be able to view, edit, or remove it from\nthe Booked Trips page.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textMuted,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _title,
+                    decoration: const InputDecoration(
+                      labelText: 'Trip Title',
+                      prefixIcon: Icon(HugeIcons.strokeRoundedTag01),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _notes,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      labelText: 'Notes (optional)',
+                      hintText: 'Reminders, who you\'re going with, budget…',
+                      alignLabelWithHint: true,
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+                  PillButton(
+                    label: 'Save Trip',
+                    icon: HugeIcons.strokeRoundedBookmarkAdd01,
+                    onPressed: () => Navigator.pop(
+                      context,
+                      _SaveTripResult(_title.text, _notes.text),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BreakdownRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final bool isLast;
+
+  const _BreakdownRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    this.isLast = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: AppColors.tealDark),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppColors.textDark,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
