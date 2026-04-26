@@ -22,7 +22,7 @@ class InsightCard extends StatelessWidget {
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 10,
@@ -65,7 +65,7 @@ class InsightCard extends StatelessWidget {
                   activity.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: AppColors.textDark,
@@ -75,7 +75,7 @@ class InsightCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(HugeIcons.strokeRoundedClock01,
+                    Icon(HugeIcons.strokeRoundedClock01,
                         size: 11, color: AppColors.textMuted),
                     const SizedBox(width: 3),
                     Expanded(
@@ -83,7 +83,7 @@ class InsightCard extends StatelessWidget {
                         activity.duration,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 11,
                           color: AppColors.textMuted,
                           fontWeight: FontWeight.w500,

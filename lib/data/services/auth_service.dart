@@ -92,4 +92,9 @@ class AuthService {
     }
     return null;
   }
+
+  Future<bool> hasAnyUser() async {
+    final users = await _readUsers();
+    return users.isNotEmpty;
+  }
 }

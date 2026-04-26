@@ -52,7 +52,7 @@ class WeatherDayCard extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.textMuted,
@@ -63,7 +63,7 @@ class WeatherDayCard extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '${day.highC}°',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: AppColors.textDark,
@@ -71,7 +71,7 @@ class WeatherDayCard extends StatelessWidget {
           ),
           Text(
             '${day.lowC}°',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               color: AppColors.textMuted,
             ),

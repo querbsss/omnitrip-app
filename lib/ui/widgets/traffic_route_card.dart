@@ -26,7 +26,7 @@ class TrafficRouteCard extends StatelessWidget {
               color: AppColors.cardWhite,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: AppColors.border),
-              boxShadow: const [
+              boxShadow: [
                 BoxShadow(
                   color: AppColors.shadow,
                   blurRadius: 10,
@@ -47,7 +47,7 @@ class TrafficRouteCard extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.border),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: AppColors.shadow,
                     blurRadius: 10,
@@ -83,7 +83,7 @@ class TrafficRouteCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const Positioned(
+                  Positioned(
                     left: 10,
                     bottom: 8,
                     child: Row(

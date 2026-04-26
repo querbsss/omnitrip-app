@@ -31,7 +31,7 @@ class PurposeCard extends StatelessWidget {
             color: selected ? AppColors.tealPrimary : AppColors.border,
             width: selected ? 1.6 : 1,
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 10,

@@ -12,8 +12,10 @@ import '../data/services/booked_trips_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
+import 'widgets/faq_button.dart';
 import 'widgets/origin_picker_sheet.dart';
 import 'widgets/pill_button.dart';
+import 'widgets/theme_toggle_button.dart';
 
 class BookedTripsScreen extends StatefulWidget {
   const BookedTripsScreen({super.key});
@@ -84,7 +86,7 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
     await _refresh();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         backgroundColor: AppColors.tealDark,
         behavior: SnackBarBehavior.floating,
         content: Text('Trip updated.'),
@@ -103,12 +105,12 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
         title: const Text('Remove this trip?'),
         content: Text(
           '"${trip.title}" will be removed from your Booked Trips.',
-          style: const TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text(
+            child: Text(
               'Cancel',
               style: TextStyle(color: AppColors.textMuted),
             ),
@@ -131,7 +133,7 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
     await _refresh();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
+      SnackBar(
         backgroundColor: AppColors.tealDark,
         behavior: SnackBarBehavior.floating,
         content: Text('Trip removed.'),
@@ -156,6 +158,10 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
           height: 80,
           fit: BoxFit.contain,
         ),
+        actions: const [
+          FaqButton(screenKey: 'booked'),
+          ThemeToggleButton(),
+        ],
       ),
       floatingActionButton: (!_loading && _trips.isNotEmpty)
           ? FloatingActionButton.extended(
@@ -171,7 +177,7 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
           : null,
       body: SafeArea(
         child: _loading
-            ? const Center(
+            ? Center(
                 child: CircularProgressIndicator(
                   color: AppColors.tealPrimary,
                 ),
@@ -181,7 +187,7 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Booked Trips',
                       style: TextStyle(
                         fontSize: 22,
@@ -194,7 +200,7 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
                       _trips.isEmpty
                           ? 'You haven\'t saved any trips yet.'
                           : '${_trips.length} saved trip${_trips.length == 1 ? '' : 's'} — tap one to view, edit, or remove.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         color: AppColors.textMuted,
                       ),
@@ -260,14 +266,14 @@ class _EmptyState extends StatelessWidget {
               color: AppColors.tealMuted,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.luggage_outlined,
               size: 38,
               color: AppColors.tealDark,
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
+          Text(
             'No saved trips yet',
             style: TextStyle(
               fontSize: 17,
@@ -276,7 +282,7 @@ class _EmptyState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
+          Text(
             'Generate a plan from the Planner and tap "Save Trip"\nto see it here.',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -329,7 +335,7 @@ class _TripCard extends StatelessWidget {
           color: AppColors.cardWhite,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: AppColors.border),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 12,
@@ -364,7 +370,7 @@ class _TripCard extends StatelessWidget {
                         trip.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
                           color: AppColors.textDark,
@@ -375,7 +381,7 @@ class _TripCard extends StatelessWidget {
                         '${destination.name}, ${destination.region}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textMuted,
                         ),
@@ -427,7 +433,7 @@ class _TripCard extends StatelessWidget {
                   trip.notes,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     color: AppColors.textDark,
                     height: 1.4,
@@ -522,7 +528,7 @@ class _Chip extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: AppColors.tealDark,
@@ -544,7 +550,7 @@ class _MenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
       tooltip: 'Trip options',
-      icon: const Icon(
+      icon: Icon(
         HugeIcons.strokeRoundedMoreVertical,
         color: AppColors.textMuted,
         size: 20,
@@ -555,7 +561,7 @@ class _MenuButton extends StatelessWidget {
         if (v == 'edit') onEdit();
         if (v == 'delete') onDelete();
       },
-      itemBuilder: (_) => const [
+      itemBuilder: (_) => [
         PopupMenuItem(
           value: 'edit',
           child: Row(
@@ -647,7 +653,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
       lastDate: DateTime(now.year + 2),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
+          colorScheme: ColorScheme.light(
             primary: AppColors.tealPrimary,
             onPrimary: Colors.white,
             surface: AppColors.cardWhite,
@@ -663,7 +669,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   void _save() {
     if (_titleCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           backgroundColor: AppColors.tealDark,
           behavior: SnackBarBehavior.floating,
           content: Text('Please enter a trip title.'),
@@ -716,7 +722,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Edit Trip',
                       style: TextStyle(
@@ -757,7 +763,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                       ),
                       child: Text(
                         DateFormat('EEE, MMM d, y').format(_date),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           color: AppColors.textDark,
                           fontWeight: FontWeight.w500,
@@ -766,7 +772,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  const Text(
+                  Text(
                     'Travel Purpose',
                     style: TextStyle(
                       fontSize: 13,
@@ -816,7 +822,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.only(left: 4, right: 12),
                         child: Icon(
                           HugeIcons.strokeRoundedUserMultiple,
@@ -824,7 +830,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                           color: AppColors.tealDark,
                         ),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Text(
                           'Travelers',
                           style: TextStyle(
@@ -844,7 +850,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                         child: Text(
                           '$_travelers',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textDark,
@@ -859,7 +865,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'Transport',
                     style: TextStyle(
                       fontSize: 13,
@@ -887,7 +893,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                     ],
                   ),
                   if (!privateAllowed)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 6),
                       child: Text(
                         'Private vehicle isn\'t practical for this destination.',

@@ -3,8 +3,15 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'colors.dart';
 
+// Builds a single ThemeData reflecting the current value of AppColors.mode.
+// Rebuild this whenever the mode notifier changes.
 ThemeData buildAppTheme() {
-  final base = ThemeData.light(useMaterial3: true);
+  final brightness =
+      AppColors.isDark ? Brightness.dark : Brightness.light;
+  final base = brightness == Brightness.dark
+      ? ThemeData.dark(useMaterial3: true)
+      : ThemeData.light(useMaterial3: true);
+
   final textTheme = GoogleFonts.poppinsTextTheme(base.textTheme).apply(
     bodyColor: AppColors.textDark,
     displayColor: AppColors.textDark,
@@ -14,7 +21,7 @@ ThemeData buildAppTheme() {
     scaffoldBackgroundColor: AppColors.bgCream,
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.tealPrimary,
-      brightness: Brightness.light,
+      brightness: brightness,
     ).copyWith(
       primary: AppColors.tealPrimary,
       secondary: AppColors.tealSoft,
@@ -56,24 +63,21 @@ ThemeData buildAppTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.border),
+        borderSide: BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: AppColors.tealPrimary, width: 1.5),
+        borderSide: BorderSide(color: AppColors.tealPrimary, width: 1.5),
       ),
       hintStyle: GoogleFonts.poppins(color: AppColors.textSubtle),
+      labelStyle: GoogleFonts.poppins(color: AppColors.textMuted),
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: WidgetStateProperty.resolveWith(
-        (states) => states.contains(WidgetState.selected)
-            ? Colors.white
-            : Colors.white,
-      ),
+      thumbColor: WidgetStateProperty.all(Colors.white),
       trackColor: WidgetStateProperty.resolveWith(
         (states) => states.contains(WidgetState.selected)
             ? AppColors.tealPrimary

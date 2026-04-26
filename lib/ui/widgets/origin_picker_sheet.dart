@@ -55,7 +55,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Where are you coming from?',
                       style: TextStyle(
@@ -120,7 +120,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                           padding: const EdgeInsets.only(top: 12, bottom: 6),
                           child: Text(
                             island.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppColors.tealDark,
@@ -153,7 +153,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   alignment: Alignment.center,
-                                  child: const Icon(
+                                  child: Icon(
                                     HugeIcons.strokeRoundedLocation01,
                                     size: 16,
                                     color: AppColors.tealDark,
@@ -167,7 +167,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                                     children: [
                                       Text(
                                         o.name,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: AppColors.textDark,
@@ -175,7 +175,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                                       ),
                                       Text(
                                         o.province,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           color: AppColors.textMuted,
                                         ),
@@ -183,7 +183,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                                     ],
                                   ),
                                 ),
-                                const Icon(
+                                Icon(
                                   HugeIcons.strokeRoundedArrowRight01,
                                   color: AppColors.textSubtle,
                                 ),
@@ -194,7 +194,7 @@ class _OriginPickerSheetState extends State<OriginPickerSheet> {
                       ),
                     ],
                   if (filtered.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(40),
                       child: Center(
                         child: Text(

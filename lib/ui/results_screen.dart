@@ -9,8 +9,10 @@ import '../data/models/travel_plan.dart';
 import '../data/services/booked_trips_service.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
+import 'widgets/faq_button.dart';
 import 'widgets/insight_card.dart';
 import 'widgets/pill_button.dart';
+import 'widgets/theme_toggle_button.dart';
 import 'widgets/traffic_route_card.dart';
 import 'widgets/weather_day_card.dart';
 
@@ -97,14 +99,14 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   alignment: Alignment.center,
-                  child: const Icon(
+                  child: Icon(
                     HugeIcons.strokeRoundedCheckmarkCircle02,
                     size: 36,
                     color: AppColors.tealDark,
                   ),
                 ),
                 const SizedBox(height: 14),
-                const Text(
+                Text(
                   'Trip Saved!',
                   style: TextStyle(
                     fontSize: 22,
@@ -116,7 +118,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 Text(
                   trip.title,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.tealDark,
                     fontWeight: FontWeight.w600,
@@ -173,7 +175,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   '🎉  Congrats!',
                   style: TextStyle(
                     fontSize: 18,
@@ -182,7 +184,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'You can find your trips in the\nBooked Trips page.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -200,7 +202,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 const SizedBox(height: 6),
                 TextButton(
                   onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text(
+                  child: Text(
                     'Stay here',
                     style: TextStyle(
                       color: AppColors.textMuted,
@@ -252,6 +254,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
             fit: BoxFit.contain,
           ),
         ),
+        actions: const [
+          FaqButton(screenKey: 'results'),
+          ThemeToggleButton(),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -264,7 +270,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 color: AppColors.cardWhite,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: AppColors.border),
-                boxShadow: const [
+                boxShadow: [
                   BoxShadow(
                     color: AppColors.shadow,
                     blurRadius: 14,
@@ -292,7 +298,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Your Smart Plan:',
                           style: TextStyle(
                             fontSize: 13,
@@ -304,7 +310,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           '${plan.destination.name}, Philippines',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
                             color: AppColors.textDark,
@@ -313,12 +319,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
                         const SizedBox(height: 2),
                         Row(
                           children: [
-                            const Icon(HugeIcons.strokeRoundedCalendar03,
+                            Icon(HugeIcons.strokeRoundedCalendar03,
                                 size: 12, color: AppColors.tealDark),
                             const SizedBox(width: 4),
                             Text(
                               dateLabel,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 12,
                                 color: AppColors.tealDark,
                                 fontWeight: FontWeight.w600,
@@ -367,13 +373,13 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(HugeIcons.strokeRoundedInformationCircle,
+                    Icon(HugeIcons.strokeRoundedInformationCircle,
                         size: 16, color: AppColors.tealDark),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         plan.forecast.advisory,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.tealDark,
                           height: 1.4,
@@ -413,7 +419,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
             const _SectionTitle('Destination Insights & Activities'),
             const SizedBox(height: 10),
             if (plan.activities.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Text(
                   'No activities found for this combination.',
@@ -455,12 +461,12 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(HugeIcons.strokeRoundedTick02,
+                          Icon(HugeIcons.strokeRoundedTick02,
                               size: 14, color: AppColors.tealPrimary),
                           const SizedBox(width: 6),
                           Text(
                             tip,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 12,
                               color: AppColors.textDark,
                               fontWeight: FontWeight.w500,
@@ -492,7 +498,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.only(top: 6),
                             child: Icon(Icons.circle,
                                 size: 6, color: AppColors.tealPrimary),
@@ -501,7 +507,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                           Expanded(
                             child: Text(
                               i,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 13,
                                 height: 1.45,
                                 color: AppColors.textDark,
@@ -527,7 +533,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   color: AppColors.tealMuted,
                   borderRadius: BorderRadius.circular(28),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(HugeIcons.strokeRoundedCheckmarkCircle02,
@@ -553,9 +559,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
             const SizedBox(height: 10),
             TextButton.icon(
               onPressed: () => Navigator.pop(context),
-              icon: const Icon(HugeIcons.strokeRoundedRefresh,
+              icon: Icon(HugeIcons.strokeRoundedRefresh,
                   size: 16, color: AppColors.tealDark),
-              label: const Text(
+              label: Text(
                 'Plan Another Trip',
                 style: TextStyle(
                   fontSize: 14,
@@ -627,7 +633,7 @@ class _SaveTripSheetState extends State<_SaveTripSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Text(
+                  Text(
                     'Save to Booked Trips',
                     style: TextStyle(
                       fontSize: 18,
@@ -710,7 +716,7 @@ class _BreakdownRow extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
                     color: AppColors.textMuted,
                     fontWeight: FontWeight.w500,
@@ -718,7 +724,7 @@ class _BreakdownRow extends StatelessWidget {
                 ),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     color: AppColors.textDark,
                     fontWeight: FontWeight.w600,
@@ -741,7 +747,7 @@ class _SectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.textDark,
@@ -817,7 +823,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 14,
@@ -836,7 +842,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                   children: [
                     Text(
                       _splitView ? 'Per Person' : 'Total Trip',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textMuted,
@@ -845,7 +851,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                     const SizedBox(height: 2),
                     Text(
                       fmt.format(showAmount),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
                         color: AppColors.tealDark,
@@ -856,7 +862,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                       _splitView
                           ? 'Split among ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}'
                           : 'For ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
                         color: AppColors.textMuted,
                       ),
@@ -871,7 +877,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
             ],
           ),
           const SizedBox(height: 14),
-          const Divider(color: AppColors.border, height: 1),
+          Divider(color: AppColors.border, height: 1),
           const SizedBox(height: 12),
           for (final item in cost.items) ...[
             Row(
@@ -879,7 +885,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                 Expanded(
                   child: Text(
                     item.label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textDark,
                     ),
@@ -889,7 +895,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                   fmt.format(_splitView
                       ? item.amount / cost.travelers
                       : item.amount),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textDark,
@@ -908,7 +914,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
             ),
             child: Row(
               children: [
-                const Icon(
+                Icon(
                   HugeIcons.strokeRoundedInformationCircle,
                   size: 14,
                   color: AppColors.tealDark,
@@ -919,7 +925,7 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                     _splitView
                         ? 'Each traveler chips in around ${fmt.format(cost.perPerson)}.'
                         : 'Estimate is rough — actual costs vary by season and choices.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11.5,
                       color: AppColors.tealDark,
                       height: 1.4,
@@ -1024,12 +1030,12 @@ class _RouteDetails extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(HugeIcons.strokeRoundedBus01,
+              Icon(HugeIcons.strokeRoundedBus01,
                   size: 16, color: AppColors.tealDark),
               const SizedBox(width: 6),
               Text(
                 '${r.fromHub}  →  ${r.toDestination}',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -1040,7 +1046,7 @@ class _RouteDetails extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${r.transportMode} • ${r.estimatedTravel}',
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               color: AppColors.textMuted,
             ),
@@ -1071,7 +1077,7 @@ class _RouteDetails extends StatelessWidget {
                 Expanded(
                   child: Text(
                     r.steps[i],
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12.5,
                       color: AppColors.textDark,
                       height: 1.35,

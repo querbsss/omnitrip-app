@@ -12,10 +12,12 @@ import '../data/services/auth_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
+import 'widgets/faq_button.dart';
 import 'widgets/input_card.dart';
 import 'widgets/origin_picker_sheet.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/purpose_card.dart';
+import 'widgets/theme_toggle_button.dart';
 import 'widgets/toggle_row.dart';
 
 class PlannerScreen extends StatefulWidget {
@@ -102,7 +104,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       lastDate: DateTime(now.year + 2),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(
+          colorScheme: ColorScheme.light(
             primary: AppColors.tealPrimary,
             onPrimary: Colors.white,
             surface: AppColors.cardWhite,
@@ -190,6 +192,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
           fit: BoxFit.contain,
         ),
         actions: [
+          const FaqButton(screenKey: 'planner'),
+          const ThemeToggleButton(),
           IconButton(
             tooltip: 'Booked Trips',
             icon: const Icon(HugeIcons.strokeRoundedBookmark02),
@@ -208,7 +212,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
           children: [
             _GreetingBanner(name: _firstName),
             const SizedBox(height: 6),
-            const Text(
+            Text(
               'Your trips with weather, traffic, and local insights. All in One Place.',
               style: TextStyle(
                 fontSize: 13,
@@ -251,7 +255,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
             const SizedBox(height: 22),
             Text(
               purposeHeading,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -290,7 +294,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
               ],
             ),
             const SizedBox(height: 22),
-            const Text(
+            Text(
               'Plan Options:',
               style: TextStyle(
                 fontSize: 14,
@@ -344,7 +348,7 @@ class _OriginPickerCard extends StatelessWidget {
           color: AppColors.cardWhite,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.border),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 12,
@@ -362,7 +366,7 @@ class _OriginPickerCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               alignment: Alignment.center,
-              child: const Icon(
+              child: Icon(
                 HugeIcons.strokeRoundedRoute02,
                 size: 18,
                 color: AppColors.tealDark,
@@ -373,7 +377,7 @@ class _OriginPickerCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Coming from',
                     style: TextStyle(
                       fontSize: 11,
@@ -395,7 +399,7 @@ class _OriginPickerCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               HugeIcons.strokeRoundedArrowDown01,
               color: AppColors.textSubtle,
               size: 20,
@@ -422,7 +426,7 @@ class _TravelersStepper extends StatelessWidget {
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 12,
@@ -440,14 +444,14 @@ class _TravelersStepper extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
             ),
             alignment: Alignment.center,
-            child: const Icon(
+            child: Icon(
               HugeIcons.strokeRoundedUserMultiple,
               size: 18,
               color: AppColors.tealDark,
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -480,7 +484,7 @@ class _TravelersStepper extends StatelessWidget {
             child: Text(
               '$count',
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -547,7 +551,7 @@ class _TransportSelector extends StatelessWidget {
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
             color: AppColors.shadow,
             blurRadius: 12,
@@ -568,14 +572,14 @@ class _TransportSelector extends StatelessWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 alignment: Alignment.center,
-                child: const Icon(
+                child: Icon(
                   HugeIcons.strokeRoundedBus01,
                   size: 18,
                   color: AppColors.tealDark,
                 ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Transport Mode',
                   style: TextStyle(
@@ -743,7 +747,7 @@ class _GreetingBannerState extends State<_GreetingBanner> {
       child: Text(
         text,
         key: ValueKey<int>(_idx),
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w700,
           color: AppColors.textDark,
@@ -805,7 +809,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
               child: Row(
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Choose Destination',
                       style: TextStyle(
@@ -869,7 +873,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                           padding: const EdgeInsets.only(top: 12, bottom: 6),
                           child: Text(
                             region.toUpperCase(),
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                               color: AppColors.tealDark,
@@ -902,7 +906,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                                     children: [
                                       Text(
                                         d.name,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: AppColors.textDark,
@@ -910,7 +914,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                                       ),
                                       Text(
                                         d.province,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           color: AppColors.textMuted,
                                         ),
@@ -918,7 +922,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                                     ],
                                   ),
                                 ),
-                                const Icon(HugeIcons.strokeRoundedArrowRight01,
+                                Icon(HugeIcons.strokeRoundedArrowRight01,
                                     color: AppColors.textSubtle),
                               ],
                             ),
@@ -927,7 +931,7 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                       ),
                     ],
                   if (filtered.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(40),
                       child: Center(
                         child: Text(

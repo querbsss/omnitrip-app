@@ -38,7 +38,7 @@ class InputCard extends StatelessWidget {
                 : AppColors.border,
             width: 1,
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
               color: AppColors.shadow,
               blurRadius: 12,
@@ -64,7 +64,7 @@ class InputCard extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppColors.textDark,
@@ -87,7 +87,7 @@ class InputCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(HugeIcons.strokeRoundedArrowRight01,
+            Icon(HugeIcons.strokeRoundedArrowRight01,
                 color: AppColors.textSubtle, size: 20),
           ],
         ),

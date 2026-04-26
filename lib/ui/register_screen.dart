@@ -5,7 +5,9 @@ import '../core/colors.dart';
 import '../core/validators.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/session_service.dart';
+import 'widgets/faq_button.dart';
 import 'widgets/pill_button.dart';
+import 'widgets/theme_toggle_button.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -72,6 +74,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
           icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
           onPressed: () => Navigator.maybePop(context),
         ),
+        actions: const [
+          FaqButton(screenKey: 'register'),
+          ThemeToggleButton(),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -92,7 +98,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Create account',
                   textAlign: TextAlign.center,
                   style: TextStyle(
@@ -102,7 +108,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Plan your first smart trip in minutes.',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: AppColors.textMuted, fontSize: 13),
@@ -176,7 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Already registered? ',
                       style: TextStyle(color: AppColors.textMuted),
                     ),
@@ -185,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         context,
                         '/login',
                       ),
-                      child: const Text(
+                      child: Text(
                         'Log In',
                         style: TextStyle(
                           color: AppColors.tealDark,

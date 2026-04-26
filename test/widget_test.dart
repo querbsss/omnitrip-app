@@ -4,7 +4,7 @@ import 'package:omnitrip/app.dart';
 
 void main() {
   testWidgets('OmniTrip app boots to welcome screen', (tester) async {
-    await tester.pumpWidget(const OmniTripApp(startLoggedIn: false));
+    await tester.pumpWidget(const OmniTripApp(startRoute: '/'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Travel Planner'), findsOneWidget);

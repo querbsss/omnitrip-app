@@ -6,7 +6,9 @@ import '../core/validators.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/session_service.dart';
 import 'widgets/animated_login_background.dart';
+import 'widgets/faq_button.dart';
 import 'widgets/pill_button.dart';
+import 'widgets/theme_toggle_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -67,6 +69,10 @@ class _LoginScreenState extends State<LoginScreen> {
           icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
           onPressed: () => Navigator.maybePop(context),
         ),
+        actions: const [
+          FaqButton(screenKey: 'login'),
+          ThemeToggleButton(),
+        ],
       ),
       body: SafeArea(
         child: Stack(
@@ -96,7 +102,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: BoxDecoration(
                         color: AppColors.bgCream.withValues(alpha: 0.85),
                         borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
                             color: AppColors.shadow,
                             blurRadius: 18,
@@ -107,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          const Text(
+                          Text(
                             'Welcome back',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -117,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          const Text(
+                          Text(
                             'Log in to continue planning your trip.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
@@ -169,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
+                              Text(
                                 "Don't have an account? ",
                                 style: TextStyle(color: AppColors.textMuted),
                               ),
@@ -178,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   context,
                                   '/register',
                                 ),
-                                child: const Text(
+                                child: Text(
                                   'Register',
                                   style: TextStyle(
                                     color: AppColors.tealDark,
