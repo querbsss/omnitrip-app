@@ -1,6 +1,7 @@
 import '../datasets/activities.dart';
 import '../datasets/routes.dart';
 import '../models/activity.dart';
+import '../models/cost_estimate.dart';
 import '../models/destination.dart';
 import '../models/route_info.dart';
 import '../models/travel_plan.dart';
@@ -13,12 +14,21 @@ class PlanGenerator {
     required String purpose,
     required bool weatherAware,
     required bool trafficAware,
+    String originLocation = '',
+    int travelers = 1,
+    String transportMode = 'commute',
   }) {
     final forecast = _buildForecast(destination, travelDate);
     final route = _buildRoute(destination, trafficAware);
     final activities = _filterActivities(destination, purpose);
     final packing = _packingTips(forecast, destination, purpose);
     final insights = _insights(destination, forecast, purpose);
+    final cost = _buildCostEstimate(
+      destination: destination,
+      purpose: purpose,
+      travelers: travelers,
+      transportMode: transportMode,
+    );
 
     return TravelPlan(
       destination: destination,
@@ -31,6 +41,10 @@ class PlanGenerator {
       activities: activities,
       packingTips: packing,
       insights: insights,
+      originLocation: originLocation,
+      travelers: travelers < 1 ? 1 : travelers,
+      transportMode: transportMode,
+      costEstimate: cost,
     );
   }
 
@@ -202,5 +216,213 @@ class PlanGenerator {
       if (purpose == 'vacation')
         'Mid-week trips to ${dest.name} usually mean lighter crowds and lower rates.',
     ];
+  }
+
+  // Travel-only flag means the destination is reachable only by air/sea, so a
+  // private vehicle option does not apply (Palawan, Boracay, Siargao, etc.).
+  static bool privateVehicleApplicable(Destination dest) {
+    final flyOnly = {
+      'palawan',
+      'el_nido',
+      'coron',
+      'puerto_princesa',
+      'boracay',
+      'siargao',
+      'camiguin',
+      'batanes',
+      'romblon',
+      'bantayan',
+      'panglao',
+      'bohol',
+      'siquijor',
+      'samal',
+      'tawi_tawi',
+    };
+    return !flyOnly.contains(dest.id);
+  }
+
+  CostEstimate _buildCostEstimate({
+    required Destination destination,
+    required String purpose,
+    required int travelers,
+    required String transportMode,
+  }) {
+    final t = travelers < 1 ? 1 : travelers;
+    final isFlyOnly = !privateVehicleApplicable(destination);
+    final effectiveMode = isFlyOnly ? 'commute' : transportMode;
+
+    // Transport per person (PHP). Fly-only destinations use air/ferry combos.
+    double transportPerPerson;
+    String transportLabel;
+    if (isFlyOnly) {
+      transportPerPerson = _flyFareFor(destination);
+      transportLabel = 'Round-trip airfare/ferry (per person)';
+    } else if (effectiveMode == 'private') {
+      // Cost is split among travelers (fuel + tolls).
+      final totalDriveCost = _privateDriveCost(destination);
+      transportPerPerson = totalDriveCost / t;
+      transportLabel = 'Fuel + tolls (split among $t)';
+    } else {
+      transportPerPerson = _commuteFareFor(destination);
+      transportLabel = 'Bus / van / ferry (per person)';
+    }
+
+    // Lodging per person per night (1 night assumed for a quick estimate).
+    final lodgingPerPerson = _lodgingFor(destination, purpose);
+
+    // Food per person per day.
+    final foodPerPerson = _foodFor(destination, purpose);
+
+    // Activities per person.
+    final activitiesPerPerson = _activitiesCostFor(destination, purpose);
+
+    // Misc buffer per person (souvenirs/tips/etc.)
+    const miscPerPerson = 400.0;
+
+    return CostEstimate(
+      travelers: t,
+      transportMode: effectiveMode,
+      items: [
+        CostBreakdown(
+          label: transportLabel,
+          amount: transportPerPerson * t,
+        ),
+        CostBreakdown(
+          label: 'Lodging (1 night, per person)',
+          amount: lodgingPerPerson * t,
+        ),
+        CostBreakdown(
+          label: 'Food & drinks (per person)',
+          amount: foodPerPerson * t,
+        ),
+        CostBreakdown(
+          label: 'Activities & entrance fees',
+          amount: activitiesPerPerson * t,
+        ),
+        CostBreakdown(
+          label: 'Misc / buffer',
+          amount: miscPerPerson * t,
+        ),
+      ],
+    );
+  }
+
+  double _flyFareFor(Destination dest) {
+    // Rough round-trip airfare or ferry combo from Manila in PHP.
+    switch (dest.id) {
+      case 'palawan':
+      case 'el_nido':
+      case 'coron':
+      case 'puerto_princesa':
+        return 5500;
+      case 'boracay':
+        return 5200;
+      case 'siargao':
+        return 6800;
+      case 'batanes':
+        return 12000;
+      case 'camiguin':
+        return 6000;
+      case 'siquijor':
+      case 'panglao':
+      case 'bohol':
+        return 4800;
+      default:
+        return 4500;
+    }
+  }
+
+  double _commuteFareFor(Destination dest) {
+    // Round-trip public commute estimate from Manila in PHP per person.
+    if (dest.region == 'Mindanao') return 4500;
+    if (dest.region == 'Visayas') return 3500;
+    // Luzon
+    switch (dest.id) {
+      case 'baguio':
+      case 'sagada':
+      case 'banaue':
+      case 'vigan':
+      case 'pagudpud':
+        return 1600;
+      case 'tagaytay':
+      case 'batangas':
+      case 'subic':
+      case 'clark':
+      case 'pampanga':
+        return 600;
+      case 'manila':
+      case 'makati':
+      case 'quezon_city':
+      case 'pasig':
+      case 'taguig':
+        return 200;
+      default:
+        return 1000;
+    }
+  }
+
+  double _privateDriveCost(Destination dest) {
+    // Total round-trip fuel + tolls (PHP), to be split among travelers.
+    if (dest.region == 'Mindanao' || dest.region == 'Visayas') {
+      // Most aren't drivable from Manila — fall back to a long-haul estimate.
+      return 8000;
+    }
+    switch (dest.id) {
+      case 'baguio':
+      case 'sagada':
+      case 'banaue':
+        return 4500;
+      case 'vigan':
+      case 'pagudpud':
+        return 6000;
+      case 'tagaytay':
+      case 'batangas':
+        return 1800;
+      case 'subic':
+      case 'clark':
+      case 'pampanga':
+        return 2200;
+      case 'manila':
+      case 'makati':
+      case 'quezon_city':
+      case 'pasig':
+      case 'taguig':
+        return 600;
+      default:
+        return 3000;
+    }
+  }
+
+  double _lodgingFor(Destination dest, String purpose) {
+    // Per person per night in PHP.
+    final premium = dest.tags.contains('beach') ||
+        dest.tags.contains('island') ||
+        dest.tags.contains('diving');
+    if (purpose == 'date_idea') {
+      return premium ? 2800 : 2000;
+    }
+    if (purpose == 'school_business') {
+      return 1800;
+    }
+    return premium ? 2200 : 1500;
+  }
+
+  double _foodFor(Destination dest, String purpose) {
+    if (purpose == 'date_idea') return 1500;
+    if (purpose == 'school_business') return 900;
+    return 1100;
+  }
+
+  double _activitiesCostFor(Destination dest, String purpose) {
+    if (dest.tags.contains('diving')) return 2500;
+    if (dest.tags.contains('island') || dest.tags.contains('beach')) {
+      return 1500;
+    }
+    if (dest.tags.contains('adventure') || dest.tags.contains('mountain')) {
+      return 1200;
+    }
+    if (purpose == 'date_idea') return 1300;
+    if (purpose == 'school_business') return 500;
+    return 900;
   }
 }

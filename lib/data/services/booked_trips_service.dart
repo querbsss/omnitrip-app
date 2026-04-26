@@ -37,6 +37,9 @@ class BookedTripsService {
     required bool weatherAware,
     required bool trafficAware,
     String notes = '',
+    String originLocation = '',
+    int travelers = 1,
+    String transportMode = 'commute',
   }) async {
     final now = DateTime.now();
     final trip = BookedTrip(
@@ -50,6 +53,9 @@ class BookedTripsService {
       trafficAware: trafficAware,
       notes: notes.trim(),
       createdAt: now,
+      originLocation: originLocation.trim(),
+      travelers: travelers < 1 ? 1 : travelers,
+      transportMode: transportMode,
     );
     final list = await all(email);
     list.add(trip);

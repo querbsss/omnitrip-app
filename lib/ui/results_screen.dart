@@ -58,6 +58,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
       weatherAware: plan.weatherAware,
       trafficAware: plan.trafficAware,
       notes: result.notes,
+      originLocation: plan.originLocation,
+      travelers: plan.travelers,
+      transportMode: plan.transportMode,
     );
     if (!mounted) return;
     setState(() => _savedTripId = trip.id);
@@ -392,6 +395,18 @@ class _ResultsScreenState extends State<ResultsScreen> {
             ),
             const SizedBox(height: 8),
             _RouteDetails(plan: plan),
+            const SizedBox(height: 22),
+
+            // ── Trip Details (origin / travelers / transport) ──
+            const _SectionTitle('Trip Details'),
+            const SizedBox(height: 10),
+            _TripDetailsCard(plan: plan),
+            const SizedBox(height: 22),
+
+            // ── Cost Estimate ────────────────
+            const _SectionTitle('Cost Estimate (PHP)'),
+            const SizedBox(height: 10),
+            _CostEstimateCard(plan: plan),
             const SizedBox(height: 22),
 
             // ── Insights & Activities ────────
@@ -730,6 +745,261 @@ class _SectionTitle extends StatelessWidget {
         fontSize: 16,
         fontWeight: FontWeight.w700,
         color: AppColors.textDark,
+      ),
+    );
+  }
+}
+
+class _TripDetailsCard extends StatelessWidget {
+  final TravelPlan plan;
+  const _TripDetailsCard({required this.plan});
+
+  @override
+  Widget build(BuildContext context) {
+    final transportLabel = BookedTrip.transportLabel(plan.transportMode);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        children: [
+          _BreakdownRow(
+            icon: HugeIcons.strokeRoundedRoute02,
+            label: 'Coming from',
+            value: plan.originLocation.isEmpty ? '—' : plan.originLocation,
+          ),
+          _BreakdownRow(
+            icon: HugeIcons.strokeRoundedUserMultiple,
+            label: 'Travelers',
+            value: '${plan.travelers} ${plan.travelers == 1 ? "person" : "people"}',
+          ),
+          _BreakdownRow(
+            icon: plan.transportMode == 'private'
+                ? HugeIcons.strokeRoundedCar01
+                : HugeIcons.strokeRoundedBus01,
+            label: 'Transport',
+            value: transportLabel,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CostEstimateCard extends StatefulWidget {
+  final TravelPlan plan;
+  const _CostEstimateCard({required this.plan});
+
+  @override
+  State<_CostEstimateCard> createState() => _CostEstimateCardState();
+}
+
+class _CostEstimateCardState extends State<_CostEstimateCard> {
+  bool _splitView = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cost = widget.plan.costEstimate;
+    final fmt = NumberFormat.currency(
+      locale: 'en_PH',
+      symbol: '₱',
+      decimalDigits: 0,
+    );
+    final showAmount = _splitView ? cost.perPerson : cost.total;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 14,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _splitView ? 'Per Person' : 'Total Trip',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      fmt.format(showAmount),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.tealDark,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      _splitView
+                          ? 'Split among ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}'
+                          : 'For ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              _SplitToggle(
+                splitView: _splitView,
+                onChanged: (v) => setState(() => _splitView = v),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          const Divider(color: AppColors.border, height: 1),
+          const SizedBox(height: 12),
+          for (final item in cost.items) ...[
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                ),
+                Text(
+                  fmt.format(_splitView
+                      ? item.amount / cost.travelers
+                      : item.amount),
+                  style: const TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+          ],
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: AppColors.tealMuted,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  HugeIcons.strokeRoundedInformationCircle,
+                  size: 14,
+                  color: AppColors.tealDark,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _splitView
+                        ? 'Each traveler chips in around ${fmt.format(cost.perPerson)}.'
+                        : 'Estimate is rough — actual costs vary by season and choices.',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      color: AppColors.tealDark,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplitToggle extends StatelessWidget {
+  final bool splitView;
+  final ValueChanged<bool> onChanged;
+
+  const _SplitToggle({required this.splitView, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: AppColors.bgCream,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _SplitToggleChip(
+            label: 'Total',
+            selected: !splitView,
+            onTap: () => onChanged(false),
+          ),
+          _SplitToggleChip(
+            label: 'Split',
+            selected: splitView,
+            onTap: () => onChanged(true),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplitToggleChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _SplitToggleChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.tealPrimary : Colors.transparent,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: selected ? Colors.white : AppColors.textMuted,
+          ),
+        ),
       ),
     );
   }

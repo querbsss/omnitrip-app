@@ -31,10 +31,20 @@ class _PlannerScreenState extends State<PlannerScreen> {
   bool _trafficAware = true;
   String? _firstName;
 
+  final _originCtrl = TextEditingController();
+  int _travelers = 1;
+  String _transportMode = 'commute';
+
   @override
   void initState() {
     super.initState();
     _loadFirstName();
+  }
+
+  @override
+  void dispose() {
+    _originCtrl.dispose();
+    super.dispose();
   }
 
   Future<void> _loadFirstName() async {
@@ -57,7 +67,12 @@ class _PlannerScreenState extends State<PlannerScreen> {
       builder: (_) => const _DestinationPickerSheet(),
     );
     if (selected != null) {
-      setState(() => _destination = selected);
+      setState(() {
+        _destination = selected;
+        if (!PlanGenerator.privateVehicleApplicable(selected)) {
+          _transportMode = 'commute';
+        }
+      });
     }
   }
 
@@ -96,12 +111,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
       _toast('Please choose a travel purpose.');
       return;
     }
+    if (_originCtrl.text.trim().isEmpty) {
+      _toast('Please enter where you\'re coming from.');
+      return;
+    }
     final plan = PlanGenerator().generate(
       destination: _destination!,
       travelDate: _date!,
       purpose: _purpose!,
       weatherAware: _weatherAware,
       trafficAware: _trafficAware,
+      originLocation: _originCtrl.text.trim(),
+      travelers: _travelers,
+      transportMode: _transportMode,
     );
     Navigator.pushNamed(context, '/results', arguments: ResultsArgs(plan));
   }
@@ -134,6 +156,9 @@ class _PlannerScreenState extends State<PlannerScreen> {
     final purposeHeading = _destination == null
         ? 'Select Travel Purpose'
         : 'Select Travel Purpose:  [${_destination!.name}]';
+
+    final privateAllowed = _destination == null ||
+        PlanGenerator.privateVehicleApplicable(_destination!);
 
     return Scaffold(
       backgroundColor: AppColors.bgCream,
@@ -189,6 +214,19 @@ class _PlannerScreenState extends State<PlannerScreen> {
               hint: 'Select your date',
               value: dateLabel,
               onTap: _pickDate,
+            ),
+            const SizedBox(height: 12),
+            _OriginField(controller: _originCtrl),
+            const SizedBox(height: 12),
+            _TravelersStepper(
+              count: _travelers,
+              onChanged: (v) => setState(() => _travelers = v),
+            ),
+            const SizedBox(height: 12),
+            _TransportSelector(
+              mode: _transportMode,
+              privateAllowed: privateAllowed,
+              onChanged: (v) => setState(() => _transportMode = v),
             ),
             const SizedBox(height: 22),
             Text(
@@ -261,6 +299,346 @@ class _PlannerScreenState extends State<PlannerScreen> {
               icon: HugeIcons.strokeRoundedSparkles,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OriginField extends StatelessWidget {
+  final TextEditingController controller;
+  const _OriginField({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.tealMuted,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              HugeIcons.strokeRoundedRoute02,
+              size: 18,
+              color: AppColors.tealDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              decoration: const InputDecoration(
+                labelText: 'Coming from',
+                hintText: 'e.g., Batangas City',
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: EdgeInsets.symmetric(vertical: 8),
+                isDense: true,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TravelersStepper extends StatelessWidget {
+  final int count;
+  final ValueChanged<int> onChanged;
+
+  const _TravelersStepper({required this.count, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: AppColors.tealMuted,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.center,
+            child: const Icon(
+              HugeIcons.strokeRoundedUserMultiple,
+              size: 18,
+              color: AppColors.tealDark,
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Travelers',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+                Text(
+                  'How many are going?',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _StepperButton(
+            icon: Icons.remove,
+            enabled: count > 1,
+            onTap: () => onChanged(count - 1),
+          ),
+          SizedBox(
+            width: 36,
+            child: Text(
+              '$count',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textDark,
+              ),
+            ),
+          ),
+          _StepperButton(
+            icon: Icons.add,
+            enabled: count < 20,
+            onTap: () => onChanged(count + 1),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepperButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _StepperButton({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? AppColors.tealPrimary : AppColors.border,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 18, color: Colors.white),
+      ),
+    );
+  }
+}
+
+class _TransportSelector extends StatelessWidget {
+  final String mode;
+  final bool privateAllowed;
+  final ValueChanged<String> onChanged;
+
+  const _TransportSelector({
+    required this.mode,
+    required this.privateAllowed,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.cardWhite,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 12,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: AppColors.tealMuted,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                alignment: Alignment.center,
+                child: const Icon(
+                  HugeIcons.strokeRoundedBus01,
+                  size: 18,
+                  color: AppColors.tealDark,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Transport Mode',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _TransportOption(
+                  label: 'Public Commute',
+                  icon: HugeIcons.strokeRoundedBus01,
+                  selected: mode == 'commute',
+                  enabled: true,
+                  onTap: () => onChanged('commute'),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _TransportOption(
+                  label: 'Private Vehicle',
+                  icon: HugeIcons.strokeRoundedCar01,
+                  selected: mode == 'private',
+                  enabled: privateAllowed,
+                  onTap: () => onChanged('private'),
+                ),
+              ),
+            ],
+          ),
+          if (!privateAllowed)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Private vehicle isn\'t practical here — fly or ferry only.',
+                style: TextStyle(
+                  fontSize: 11,
+                  color: AppColors.textMuted,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TransportOption extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _TransportOption({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: enabled ? onTap : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.tealSoft : AppColors.cardWhite,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.tealPrimary : AppColors.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: selected ? AppColors.tealDark : AppColors.tealPrimary,
+              ),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: selected ? AppColors.tealDark : AppColors.textDark,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -340,12 +718,15 @@ class _DestinationPickerSheet extends StatefulWidget {
 
 class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
   String _query = '';
+  String? _regionFilter;
 
   @override
   Widget build(BuildContext context) {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.of(context).size.height * 0.85;
+
     final filtered = Destinations.all.where((d) {
+      if (_regionFilter != null && d.region != _regionFilter) return false;
       if (_query.isEmpty) return true;
       final q = _query.toLowerCase();
       return d.name.toLowerCase().contains(q) ||
@@ -405,6 +786,31 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                 ),
               ),
             ),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _RegionPill(
+                      label: 'All',
+                      selected: _regionFilter == null,
+                      onTap: () => setState(() => _regionFilter = null),
+                    ),
+                    const SizedBox(width: 6),
+                    for (final region in Destinations.regions) ...[
+                      _RegionPill(
+                        label: region,
+                        selected: _regionFilter == region,
+                        onTap: () => setState(() => _regionFilter = region),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
             Flexible(
               child: ListView(
@@ -412,18 +818,21 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
                 children: [
                   for (final region in Destinations.regions)
                     if (byRegion[region]?.isNotEmpty ?? false) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12, bottom: 6),
-                        child: Text(
-                          region.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.tealDark,
-                            letterSpacing: 1.1,
+                      if (_regionFilter == null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12, bottom: 6),
+                          child: Text(
+                            region.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.tealDark,
+                              letterSpacing: 1.1,
+                            ),
                           ),
-                        ),
-                      ),
+                        )
+                      else
+                        const SizedBox(height: 6),
                       ...byRegion[region]!.map(
                         (d) => InkWell(
                           borderRadius: BorderRadius.circular(12),
@@ -485,6 +894,45 @@ class _DestinationPickerSheetState extends State<_DestinationPickerSheet> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RegionPill extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _RegionPill({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(20),
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.tealPrimary : AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected ? AppColors.tealPrimary : AppColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: selected ? Colors.white : AppColors.textDark,
+          ),
         ),
       ),
     );

@@ -55,6 +55,9 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
       purpose: trip.purpose,
       weatherAware: trip.weatherAware,
       trafficAware: trip.trafficAware,
+      originLocation: trip.originLocation,
+      travelers: trip.travelers,
+      transportMode: trip.transportMode,
     );
     Navigator.pushNamed(
       context,
@@ -151,6 +154,18 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
           fit: BoxFit.contain,
         ),
       ),
+      floatingActionButton: (!_loading && _trips.isNotEmpty)
+          ? FloatingActionButton.extended(
+              backgroundColor: AppColors.tealPrimary,
+              foregroundColor: Colors.white,
+              icon: const Icon(HugeIcons.strokeRoundedSparkles, size: 18),
+              label: const Text(
+                'New Trip',
+                style: TextStyle(fontWeight: FontWeight.w700),
+              ),
+              onPressed: () => Navigator.pushNamed(context, '/planner'),
+            )
+          : null,
       body: SafeArea(
         child: _loading
             ? const Center(
@@ -291,7 +306,18 @@ class _TripCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateLabel = DateFormat('EEE, MMM d, y').format(trip.travelDate);
-    return InkWell(
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tripDay = DateTime(
+      trip.travelDate.year,
+      trip.travelDate.month,
+      trip.travelDate.day,
+    );
+    final daysLeft = tripDay.difference(today).inDays;
+    final isPast = daysLeft < 0;
+    return Opacity(
+      opacity: isPast ? 0.55 : 1.0,
+      child: InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
@@ -361,17 +387,24 @@ class _TripCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
-            Row(
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
               children: [
                 _Chip(
                   icon: HugeIcons.strokeRoundedCalendar03,
                   label: dateLabel,
                 ),
-                const SizedBox(width: 6),
                 _Chip(
                   icon: HugeIcons.strokeRoundedTag01,
                   label: BookedTrip.purposeLabel(trip.purpose),
                 ),
+                _CountdownChip(daysLeft: daysLeft),
+                if (trip.travelers > 1)
+                  _Chip(
+                    icon: HugeIcons.strokeRoundedUserMultiple,
+                    label: '${trip.travelers} pax',
+                  ),
               ],
             ),
             if (trip.notes.isNotEmpty) ...[
@@ -402,6 +435,63 @@ class _TripCard extends StatelessWidget {
           ],
         ),
       ),
+      ),
+    );
+  }
+}
+
+class _CountdownChip extends StatelessWidget {
+  final int daysLeft;
+  const _CountdownChip({required this.daysLeft});
+
+  @override
+  Widget build(BuildContext context) {
+    String label;
+    Color bg;
+    Color fg;
+    if (daysLeft < 0) {
+      label = 'Past';
+      bg = AppColors.border;
+      fg = AppColors.textMuted;
+    } else if (daysLeft == 0) {
+      label = 'Today!';
+      bg = const Color(0xFFFFE4B5);
+      fg = const Color(0xFFB45309);
+    } else if (daysLeft == 1) {
+      label = 'Tomorrow';
+      bg = const Color(0xFFFFE4B5);
+      fg = const Color(0xFFB45309);
+    } else if (daysLeft <= 30) {
+      label = 'In $daysLeft days';
+      bg = AppColors.tealMuted;
+      fg = AppColors.tealDark;
+    } else {
+      final months = (daysLeft / 30).round();
+      label = months == 1 ? 'In 1 month' : 'In $months months';
+      bg = AppColors.tealMuted;
+      fg = AppColors.tealDark;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(HugeIcons.strokeRoundedClock03, size: 12, color: fg),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: fg,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -414,32 +504,28 @@ class _Chip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(
-          color: AppColors.tealMuted,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 12, color: AppColors.tealDark),
-            const SizedBox(width: 4),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.tealDark,
-                ),
-              ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: AppColors.tealMuted,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColors.tealDark),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppColors.tealDark,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -505,26 +591,33 @@ class _TripEditSheet extends StatefulWidget {
 class _TripEditSheetState extends State<_TripEditSheet> {
   late TextEditingController _titleCtrl;
   late TextEditingController _notesCtrl;
+  late TextEditingController _originCtrl;
   late DateTime _date;
   late String _purpose;
   late bool _weather;
   late bool _traffic;
+  late int _travelers;
+  late String _transportMode;
 
   @override
   void initState() {
     super.initState();
     _titleCtrl = TextEditingController(text: widget.trip.title);
     _notesCtrl = TextEditingController(text: widget.trip.notes);
+    _originCtrl = TextEditingController(text: widget.trip.originLocation);
     _date = widget.trip.travelDate;
     _purpose = widget.trip.purpose;
     _weather = widget.trip.weatherAware;
     _traffic = widget.trip.trafficAware;
+    _travelers = widget.trip.travelers;
+    _transportMode = widget.trip.transportMode;
   }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _notesCtrl.dispose();
+    _originCtrl.dispose();
     super.dispose();
   }
 
@@ -551,6 +644,16 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   }
 
   void _save() {
+    if (_titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: AppColors.tealDark,
+          behavior: SnackBarBehavior.floating,
+          content: Text('Please enter a trip title.'),
+        ),
+      );
+      return;
+    }
     final updated = widget.trip.copyWith(
       title: _titleCtrl.text,
       travelDate: _date,
@@ -558,6 +661,9 @@ class _TripEditSheetState extends State<_TripEditSheet> {
       weatherAware: _weather,
       trafficAware: _traffic,
       notes: _notesCtrl.text,
+      originLocation: _originCtrl.text,
+      travelers: _travelers,
+      transportMode: _transportMode,
     );
     Navigator.pop(context, updated);
   }
@@ -566,6 +672,11 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   Widget build(BuildContext context) {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.of(context).size.height * 0.9;
+    final dest = Destinations.byId(widget.trip.destinationId);
+    final privateAllowed = PlanGenerator.privateVehicleApplicable(dest);
+    if (!privateAllowed && _transportMode == 'private') {
+      _transportMode = 'commute';
+    }
 
     return Padding(
       padding: EdgeInsets.only(bottom: viewInsets),
@@ -659,6 +770,100 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                     ],
                   ),
                   const SizedBox(height: 16),
+                  TextField(
+                    controller: _originCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Coming from',
+                      hintText: 'e.g., Batangas City',
+                      prefixIcon: Icon(HugeIcons.strokeRoundedRoute02),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(left: 4, right: 12),
+                        child: Icon(
+                          HugeIcons.strokeRoundedUserMultiple,
+                          size: 18,
+                          color: AppColors.tealDark,
+                        ),
+                      ),
+                      const Expanded(
+                        child: Text(
+                          'Travelers',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      _StepBtn(
+                        icon: Icons.remove,
+                        enabled: _travelers > 1,
+                        onTap: () => setState(() => _travelers--),
+                      ),
+                      SizedBox(
+                        width: 36,
+                        child: Text(
+                          '$_travelers',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textDark,
+                          ),
+                        ),
+                      ),
+                      _StepBtn(
+                        icon: Icons.add,
+                        enabled: _travelers < 20,
+                        onTap: () => setState(() => _travelers++),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Transport',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _transportChoice(
+                        'commute',
+                        'Public Commute',
+                        HugeIcons.strokeRoundedBus01,
+                        true,
+                      ),
+                      _transportChoice(
+                        'private',
+                        'Private Vehicle',
+                        HugeIcons.strokeRoundedCar01,
+                        privateAllowed,
+                      ),
+                    ],
+                  ),
+                  if (!privateAllowed)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text(
+                        'Private vehicle isn\'t practical for this destination.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textMuted,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
                     title: const Text(
@@ -713,6 +918,49 @@ class _TripEditSheetState extends State<_TripEditSheet> {
     );
   }
 
+  Widget _transportChoice(
+      String value, String label, IconData icon, bool enabled) {
+    final selected = _transportMode == value;
+    return Opacity(
+      opacity: enabled ? 1 : 0.45,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: enabled ? () => setState(() => _transportMode = value) : null,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.tealSoft : AppColors.cardWhite,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: selected ? AppColors.tealPrimary : AppColors.border,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: selected ? AppColors.tealDark : AppColors.tealPrimary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: selected ? AppColors.tealDark : AppColors.textDark,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _purposeChoice(String value, String label, IconData icon) {
     final selected = _purpose == value;
     return InkWell(
@@ -745,6 +993,36 @@ class _TripEditSheetState extends State<_TripEditSheet> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _StepBtn extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _StepBtn({
+    required this.icon,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: enabled ? onTap : null,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: enabled ? AppColors.tealPrimary : AppColors.border,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        alignment: Alignment.center,
+        child: Icon(icon, size: 18, color: Colors.white),
       ),
     );
   }
