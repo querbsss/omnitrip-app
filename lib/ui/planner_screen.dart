@@ -7,11 +7,13 @@ import 'package:intl/intl.dart';
 import '../core/colors.dart';
 import '../data/datasets/destinations.dart';
 import '../data/models/destination.dart';
+import '../data/models/origin.dart';
 import '../data/services/auth_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
 import 'widgets/input_card.dart';
+import 'widgets/origin_picker_sheet.dart';
 import 'widgets/pill_button.dart';
 import 'widgets/purpose_card.dart';
 import 'widgets/toggle_row.dart';
@@ -31,7 +33,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
   bool _trafficAware = true;
   String? _firstName;
 
-  final _originCtrl = TextEditingController();
+  Origin? _origin;
   int _travelers = 1;
   String _transportMode = 'commute';
 
@@ -39,12 +41,6 @@ class _PlannerScreenState extends State<PlannerScreen> {
   void initState() {
     super.initState();
     _loadFirstName();
-  }
-
-  @override
-  void dispose() {
-    _originCtrl.dispose();
-    super.dispose();
   }
 
   Future<void> _loadFirstName() async {
@@ -69,7 +65,28 @@ class _PlannerScreenState extends State<PlannerScreen> {
     if (selected != null) {
       setState(() {
         _destination = selected;
-        if (!PlanGenerator.privateVehicleApplicable(selected)) {
+        if (!PlanGenerator.privateVehicleApplicable(selected, _origin)) {
+          _transportMode = 'commute';
+        }
+      });
+    }
+  }
+
+  Future<void> _pickOrigin() async {
+    final selected = await showModalBottomSheet<Origin>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgCream,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const OriginPickerSheet(),
+    );
+    if (selected != null) {
+      setState(() {
+        _origin = selected;
+        if (_destination != null &&
+            !PlanGenerator.privateVehicleApplicable(_destination!, selected)) {
           _transportMode = 'commute';
         }
       });
@@ -111,8 +128,8 @@ class _PlannerScreenState extends State<PlannerScreen> {
       _toast('Please choose a travel purpose.');
       return;
     }
-    if (_originCtrl.text.trim().isEmpty) {
-      _toast('Please enter where you\'re coming from.');
+    if (_origin == null) {
+      _toast('Please choose where you\'re coming from.');
       return;
     }
     final plan = PlanGenerator().generate(
@@ -121,7 +138,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
       purpose: _purpose!,
       weatherAware: _weatherAware,
       trafficAware: _trafficAware,
-      originLocation: _originCtrl.text.trim(),
+      originLocation: _origin!.name,
       travelers: _travelers,
       transportMode: _transportMode,
     );
@@ -158,7 +175,7 @@ class _PlannerScreenState extends State<PlannerScreen> {
         : 'Select Travel Purpose:  [${_destination!.name}]';
 
     final privateAllowed = _destination == null ||
-        PlanGenerator.privateVehicleApplicable(_destination!);
+        PlanGenerator.privateVehicleApplicable(_destination!, _origin);
 
     return Scaffold(
       backgroundColor: AppColors.bgCream,
@@ -216,7 +233,10 @@ class _PlannerScreenState extends State<PlannerScreen> {
               onTap: _pickDate,
             ),
             const SizedBox(height: 12),
-            _OriginField(controller: _originCtrl),
+            _OriginPickerCard(
+              origin: _origin,
+              onTap: _pickOrigin,
+            ),
             const SizedBox(height: 12),
             _TravelersStepper(
               count: _travelers,
@@ -305,62 +325,88 @@ class _PlannerScreenState extends State<PlannerScreen> {
   }
 }
 
-class _OriginField extends StatelessWidget {
-  final TextEditingController controller;
-  const _OriginField({required this.controller});
+class _OriginPickerCard extends StatelessWidget {
+  final Origin? origin;
+  final VoidCallback onTap;
+  const _OriginPickerCard({required this.origin, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-        boxShadow: const [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 12,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: BoxDecoration(
-              color: AppColors.tealMuted,
-              borderRadius: BorderRadius.circular(12),
+    final value = origin == null
+        ? null
+        : '${origin!.name}, ${origin!.province}';
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        decoration: BoxDecoration(
+          color: AppColors.cardWhite,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.border),
+          boxShadow: const [
+            BoxShadow(
+              color: AppColors.shadow,
+              blurRadius: 12,
+              offset: Offset(0, 2),
             ),
-            alignment: Alignment.center,
-            child: const Icon(
-              HugeIcons.strokeRoundedRoute02,
-              size: 18,
-              color: AppColors.tealDark,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              decoration: const InputDecoration(
-                labelText: 'Coming from',
-                hintText: 'e.g., Batangas City',
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 8),
-                isDense: true,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                color: AppColors.tealMuted,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              alignment: Alignment.center,
+              child: const Icon(
+                HugeIcons.strokeRoundedRoute02,
+                size: 18,
+                color: AppColors.tealDark,
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Coming from',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textMuted,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    value ?? 'Select your starting city or province',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: value == null
+                          ? AppColors.textSubtle
+                          : AppColors.textDark,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              HugeIcons.strokeRoundedArrowDown01,
+              color: AppColors.textSubtle,
+              size: 20,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
 
 class _TravelersStepper extends StatelessWidget {
   final int count;

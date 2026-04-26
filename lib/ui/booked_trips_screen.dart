@@ -4,12 +4,15 @@ import 'package:intl/intl.dart';
 
 import '../core/colors.dart';
 import '../data/datasets/destinations.dart';
+import '../data/datasets/origins.dart';
 import '../data/models/booked_trip.dart';
 import '../data/models/destination.dart';
+import '../data/models/origin.dart';
 import '../data/services/booked_trips_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
+import 'widgets/origin_picker_sheet.dart';
 import 'widgets/pill_button.dart';
 
 class BookedTripsScreen extends StatefulWidget {
@@ -591,7 +594,7 @@ class _TripEditSheet extends StatefulWidget {
 class _TripEditSheetState extends State<_TripEditSheet> {
   late TextEditingController _titleCtrl;
   late TextEditingController _notesCtrl;
-  late TextEditingController _originCtrl;
+  Origin? _origin;
   late DateTime _date;
   late String _purpose;
   late bool _weather;
@@ -604,7 +607,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
     super.initState();
     _titleCtrl = TextEditingController(text: widget.trip.title);
     _notesCtrl = TextEditingController(text: widget.trip.notes);
-    _originCtrl = TextEditingController(text: widget.trip.originLocation);
+    _origin = Origins.byName(widget.trip.originLocation);
     _date = widget.trip.travelDate;
     _purpose = widget.trip.purpose;
     _weather = widget.trip.weatherAware;
@@ -617,8 +620,22 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   void dispose() {
     _titleCtrl.dispose();
     _notesCtrl.dispose();
-    _originCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickOrigin() async {
+    final selected = await showModalBottomSheet<Origin>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppColors.bgCream,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => const OriginPickerSheet(),
+    );
+    if (selected != null) {
+      setState(() => _origin = selected);
+    }
   }
 
   Future<void> _pickDate() async {
@@ -661,7 +678,7 @@ class _TripEditSheetState extends State<_TripEditSheet> {
       weatherAware: _weather,
       trafficAware: _traffic,
       notes: _notesCtrl.text,
-      originLocation: _originCtrl.text,
+      originLocation: _origin?.name ?? widget.trip.originLocation,
       travelers: _travelers,
       transportMode: _transportMode,
     );
@@ -673,7 +690,8 @@ class _TripEditSheetState extends State<_TripEditSheet> {
     final viewInsets = MediaQuery.of(context).viewInsets.bottom;
     final maxHeight = MediaQuery.of(context).size.height * 0.9;
     final dest = Destinations.byId(widget.trip.destinationId);
-    final privateAllowed = PlanGenerator.privateVehicleApplicable(dest);
+    final privateAllowed =
+        PlanGenerator.privateVehicleApplicable(dest, _origin);
     if (!privateAllowed && _transportMode == 'private') {
       _transportMode = 'commute';
     }
@@ -770,12 +788,29 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  TextField(
-                    controller: _originCtrl,
-                    decoration: const InputDecoration(
-                      labelText: 'Coming from',
-                      hintText: 'e.g., Batangas City',
-                      prefixIcon: Icon(HugeIcons.strokeRoundedRoute02),
+                  InkWell(
+                    onTap: _pickOrigin,
+                    borderRadius: BorderRadius.circular(14),
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Coming from',
+                        prefixIcon: Icon(HugeIcons.strokeRoundedRoute02),
+                        suffixIcon: Icon(HugeIcons.strokeRoundedArrowDown01),
+                      ),
+                      child: Text(
+                        _origin == null
+                            ? (widget.trip.originLocation.isEmpty
+                                ? 'Select your starting city or province'
+                                : '${widget.trip.originLocation} (tap to update)')
+                            : '${_origin!.name}, ${_origin!.province}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: _origin == null
+                              ? AppColors.textSubtle
+                              : AppColors.textDark,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),

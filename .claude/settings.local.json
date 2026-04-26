@@ -9,7 +9,9 @@
       "Bash(flutter analyze *)",
       "Bash(flutter build *)",
       "Bash(flutter test *)",
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(awk 'NR<411 || NR>613' /c/Users/valen/omni_travel_app/lib/ui/planner_screen.dart)",
+      "Bash(mv /tmp/planner_screen_trimmed.dart /c/Users/valen/omni_travel_app/lib/ui/planner_screen.dart)"
     ]
   }
 }

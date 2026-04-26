@@ -1,8 +1,12 @@
+import 'dart:math' as math;
+
 import '../datasets/activities.dart';
+import '../datasets/origins.dart';
 import '../datasets/routes.dart';
 import '../models/activity.dart';
 import '../models/cost_estimate.dart';
 import '../models/destination.dart';
+import '../models/origin.dart';
 import '../models/route_info.dart';
 import '../models/travel_plan.dart';
 import '../models/weather.dart';
@@ -18,6 +22,7 @@ class PlanGenerator {
     int travelers = 1,
     String transportMode = 'commute',
   }) {
+    final origin = Origins.byName(originLocation);
     final forecast = _buildForecast(destination, travelDate);
     final route = _buildRoute(destination, trafficAware);
     final activities = _filterActivities(destination, purpose);
@@ -25,6 +30,7 @@ class PlanGenerator {
     final insights = _insights(destination, forecast, purpose);
     final cost = _buildCostEstimate(
       destination: destination,
+      origin: origin,
       purpose: purpose,
       travelers: travelers,
       transportMode: transportMode,
@@ -218,65 +224,138 @@ class PlanGenerator {
     ];
   }
 
-  // Travel-only flag means the destination is reachable only by air/sea, so a
-  // private vehicle option does not apply (Palawan, Boracay, Siargao, etc.).
-  static bool privateVehicleApplicable(Destination dest) {
-    final flyOnly = {
-      'palawan',
-      'el_nido',
-      'coron',
-      'puerto_princesa',
-      'boracay',
-      'siargao',
-      'camiguin',
-      'batanes',
-      'romblon',
-      'bantayan',
-      'panglao',
-      'bohol',
-      'siquijor',
-      'samal',
-      'tawi_tawi',
-    };
-    return !flyOnly.contains(dest.id);
+  // Maps destination ids to land mass ids so we can detect whether origin
+  // and destination are on the same drivable island.
+  static String landMassForDestination(Destination dest) {
+    switch (dest.id) {
+      // Luzon mainland
+      case 'manila':
+      case 'baguio':
+      case 'tagaytay':
+      case 'batangas':
+      case 'vigan':
+      case 'laoag':
+      case 'sagada':
+      case 'angeles':
+      case 'subic':
+      case 'baler':
+      case 'lucena':
+      case 'naga':
+      case 'legazpi':
+      case 'pagudpud':
+        return 'luzon';
+      case 'puerto_galera':
+        return 'mindoro';
+      case 'coron':
+      case 'el_nido':
+      case 'puerto_princesa':
+        return 'palawan';
+      // Visayas islands
+      case 'cebu_city':
+      case 'malapascua':
+      case 'moalboal':
+      case 'bantayan':
+        return 'cebu';
+      case 'boracay':
+        return 'boracay';
+      case 'bohol':
+        return 'bohol';
+      case 'dumaguete':
+      case 'bacolod':
+        return 'negros';
+      case 'iloilo':
+      case 'kalibo':
+        return 'panay';
+      case 'guimaras':
+        return 'guimaras';
+      case 'tacloban':
+      case 'borongan':
+        return 'leyte_samar';
+      case 'camiguin':
+        return 'camiguin';
+      case 'siquijor':
+        return 'siquijor';
+      // Mindanao mainland
+      case 'davao':
+      case 'cdo':
+      case 'gensan':
+      case 'zamboanga':
+      case 'bukidnon':
+      case 'lake_sebu':
+      case 'iligan':
+      case 'cotabato':
+      case 'bislig':
+      case 'pagadian':
+      case 'butuan':
+        return 'mindanao';
+      case 'siargao':
+        return 'siargao';
+      default:
+        return 'luzon';
+    }
+  }
+
+  // Returns true when a private vehicle is realistic for the trip — origin
+  // and destination must sit on the same drivable land mass. When no origin
+  // is provided we fall back to a Manila-based heuristic.
+  static bool privateVehicleApplicable(Destination dest, [Origin? origin]) {
+    final destLand = landMassForDestination(dest);
+    if (origin != null) {
+      return origin.landMass == destLand;
+    }
+    // No origin chosen yet — assume Metro Manila (Luzon).
+    return destLand == 'luzon';
   }
 
   CostEstimate _buildCostEstimate({
     required Destination destination,
+    required Origin? origin,
     required String purpose,
     required int travelers,
     required String transportMode,
   }) {
     final t = travelers < 1 ? 1 : travelers;
-    final isFlyOnly = !privateVehicleApplicable(destination);
-    final effectiveMode = isFlyOnly ? 'commute' : transportMode;
 
-    // Transport per person (PHP). Fly-only destinations use air/ferry combos.
+    // Use the chosen origin when available, otherwise fall back to Manila so
+    // legacy plans without an origin still produce sane numbers.
+    final effectiveOrigin = origin ?? Origins.byId('manila')!;
+    final destLand = landMassForDestination(destination);
+    final sameLandMass = effectiveOrigin.landMass == destLand;
+
+    final straightKm = _haversineKm(
+      effectiveOrigin.latitude,
+      effectiveOrigin.longitude,
+      destination.latitude,
+      destination.longitude,
+    );
+    // Roads in PH meander; bump straight-line by ~30% to approximate road km.
+    final roadKm = straightKm * 1.3;
+
     double transportPerPerson;
     String transportLabel;
-    if (isFlyOnly) {
-      transportPerPerson = _flyFareFor(destination);
-      transportLabel = 'Round-trip airfare/ferry (per person)';
-    } else if (effectiveMode == 'private') {
-      // Cost is split among travelers (fuel + tolls).
-      final totalDriveCost = _privateDriveCost(destination);
-      transportPerPerson = totalDriveCost / t;
-      transportLabel = 'Fuel + tolls (split among $t)';
+    String effectiveMode;
+    if (!sameLandMass) {
+      // Cross-island — driving isn't possible, must fly/ferry.
+      effectiveMode = 'commute';
+      transportPerPerson = _flyFerryFare(straightKm);
+      transportLabel =
+          'Round-trip airfare/ferry (per person, ~${straightKm.round()} km)';
+    } else if (transportMode == 'private') {
+      effectiveMode = 'private';
+      final total = _privateDriveTotal(roadKm);
+      transportPerPerson = total / t;
+      transportLabel =
+          'Fuel + tolls (~${roadKm.round()} km RT, split among $t)';
     } else {
-      transportPerPerson = _commuteFareFor(destination);
-      transportLabel = 'Bus / van / ferry (per person)';
+      effectiveMode = 'commute';
+      transportPerPerson = _commuteFare(roadKm);
+      transportLabel =
+          'Bus / van / jeepney (per person, ~${roadKm.round()} km)';
     }
 
-    // Lodging per person per night (1 night assumed for a quick estimate).
     final lodgingPerPerson = _lodgingFor(destination, purpose);
-
-    // Food per person per day.
     final foodPerPerson = _foodFor(destination, purpose);
-
-    // Activities per person.
     final activitiesPerPerson = _activitiesCostFor(destination, purpose);
-
-    // Misc buffer per person (souvenirs/tips/etc.)
     const miscPerPerson = 400.0;
 
     return CostEstimate(
@@ -307,90 +386,46 @@ class PlanGenerator {
     );
   }
 
-  double _flyFareFor(Destination dest) {
-    // Rough round-trip airfare or ferry combo from Manila in PHP.
-    switch (dest.id) {
-      case 'palawan':
-      case 'el_nido':
-      case 'coron':
-      case 'puerto_princesa':
-        return 5500;
-      case 'boracay':
-        return 5200;
-      case 'siargao':
-        return 6800;
-      case 'batanes':
-        return 12000;
-      case 'camiguin':
-        return 6000;
-      case 'siquijor':
-      case 'panglao':
-      case 'bohol':
-        return 4800;
-      default:
-        return 4500;
-    }
+  // Great-circle distance (km) between two coordinates.
+  double _haversineKm(double lat1, double lon1, double lat2, double lon2) {
+    const earthKm = 6371.0;
+    final dLat = _deg2rad(lat2 - lat1);
+    final dLon = _deg2rad(lon2 - lon1);
+    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+        math.cos(_deg2rad(lat1)) *
+            math.cos(_deg2rad(lat2)) *
+            math.sin(dLon / 2) *
+            math.sin(dLon / 2);
+    final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
+    return earthKm * c;
   }
 
-  double _commuteFareFor(Destination dest) {
-    // Round-trip public commute estimate from Manila in PHP per person.
-    if (dest.region == 'Mindanao') return 4500;
-    if (dest.region == 'Visayas') return 3500;
-    // Luzon
-    switch (dest.id) {
-      case 'baguio':
-      case 'sagada':
-      case 'banaue':
-      case 'vigan':
-      case 'pagudpud':
-        return 1600;
-      case 'tagaytay':
-      case 'batangas':
-      case 'subic':
-      case 'clark':
-      case 'pampanga':
-        return 600;
-      case 'manila':
-      case 'makati':
-      case 'quezon_city':
-      case 'pasig':
-      case 'taguig':
-        return 200;
-      default:
-        return 1000;
-    }
+  double _deg2rad(double deg) => deg * (math.pi / 180.0);
+
+  // Round-trip per-person bus / van fare in PHP, scaled by road km.
+  double _commuteFare(double roadKm) {
+    final fare = 100 + roadKm * 6.5;
+    return fare.clamp(150, 6500);
   }
 
-  double _privateDriveCost(Destination dest) {
-    // Total round-trip fuel + tolls (PHP), to be split among travelers.
-    if (dest.region == 'Mindanao' || dest.region == 'Visayas') {
-      // Most aren't drivable from Manila — fall back to a long-haul estimate.
-      return 8000;
+  // Total round-trip fuel + tolls (PHP) for a private drive — split among
+  // travelers at the call site.
+  double _privateDriveTotal(double roadKm) {
+    final fuel = roadKm * 2 * 6.0; // round trip × ~6 PHP/km fuel cost
+    double tolls = 0;
+    if (roadKm > 200) {
+      tolls = 600;
+    } else if (roadKm > 80) {
+      tolls = 300;
     }
-    switch (dest.id) {
-      case 'baguio':
-      case 'sagada':
-      case 'banaue':
-        return 4500;
-      case 'vigan':
-      case 'pagudpud':
-        return 6000;
-      case 'tagaytay':
-      case 'batangas':
-        return 1800;
-      case 'subic':
-      case 'clark':
-      case 'pampanga':
-        return 2200;
-      case 'manila':
-      case 'makati':
-      case 'quezon_city':
-      case 'pasig':
-      case 'taguig':
-        return 600;
-      default:
-        return 3000;
-    }
+    return (fuel + tolls).clamp(400, 12000);
+  }
+
+  // Round-trip per-person airfare or fast ferry in PHP, scaled by straight-
+  // line km between origin and destination.
+  double _flyFerryFare(double straightKm) {
+    final fare = 2500 + straightKm * 6.5;
+    return fare.clamp(3000, 15000);
   }
 
   double _lodgingFor(Destination dest, String purpose) {
