@@ -158,32 +158,21 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _PillIcon(
-                              icon: Symbols.arrow_back_rounded,
-                              onTap: () => Navigator.maybePop(context),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'BOOKED',
-                                    style: AppType.labelSm.copyWith(
-                                      color: AppColors.outline,
-                                    ),
-                                  ),
-                                  Text('Your Trips', style: AppType.headlineLg),
-                                ],
+                            Text(
+                              'BOOKED',
+                              style: AppType.labelSm.copyWith(
+                                color: AppColors.outline,
                               ),
                             ),
+                            Text('Your Trips', style: AppType.headlineLg),
                           ],
                         ),
                         const SizedBox(height: 6),
                         Padding(
-                          padding: const EdgeInsets.only(left: 56),
+                          padding: EdgeInsets.zero,
                           child: Text(
                             _trips.isEmpty
                                 ? 'You haven\'t saved any trips yet.'

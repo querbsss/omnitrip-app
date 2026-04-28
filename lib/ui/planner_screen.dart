@@ -378,9 +378,9 @@ class _GreetingHero extends StatefulWidget {
 
 class _GreetingHeroState extends State<_GreetingHero> {
   static const _templates = <String>[
-    'Plan Your Escape, {name}',
-    'Where to next, {name}?',
-    'Let\'s map it out, {name}',
+    'Saan Tayo Punta, {name}',
+    'Oh {name}, I-Set Na Yan!',
+    'Deserve mo gumala {name}!',
   ];
 
   int _idx = 0;

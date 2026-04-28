@@ -85,20 +85,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 130),
                     children: [
-                      Row(
-                        children: [
-                          _PillIcon(
-                            icon: Symbols.arrow_back_rounded,
-                            onTap: () => Navigator.maybePop(context),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'Profile',
-                              style: AppType.headlineLg,
-                            ),
-                          ),
-                        ],
+                      Text(
+                        'Profile',
+                        style: AppType.headlineLg,
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 24),
                       Center(
@@ -131,7 +121,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      _LinkRow(
+                      _LinkRow( 
                         icon: Symbols.settings_rounded,
                         title: 'Settings',
                         subtitle: 'Theme, preferences',
