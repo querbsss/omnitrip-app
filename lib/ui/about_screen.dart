@@ -17,20 +17,11 @@ class AboutScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  _PillIcon(
-                    icon: Symbols.arrow_back_rounded,
-                    onTap: () => Navigator.maybePop(context),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text('About Us', style: AppType.headlineLg),
-                  ),
-                ],
-              ),
+              Text('About Us', style: AppType.headlineLg, textAlign: TextAlign.center),
               const SizedBox(height: 28),
-              _BrandHero(),
+              Center(
+                child: _BrandHero(),
+              ),
               const SizedBox(height: 24),
               const _AboutCard(
                 icon: Symbols.auto_awesome_rounded,
