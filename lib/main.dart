@@ -17,7 +17,7 @@ Future<void> main() async {
 
   final String startRoute;
   if (loggedIn) {
-    startRoute = '/planner';
+    startRoute = '/home';
   } else if (hasAccount) {
     startRoute = '/login';
   } else {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../core/colors.dart';
+import '../../core/typography.dart';
 
 class FaqItem {
   final String question;
@@ -21,13 +22,40 @@ class FaqButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      tooltip: 'FAQs',
-      icon: Icon(
-        HugeIcons.strokeRoundedHelpCircle,
-        color: subtle ? AppColors.textMuted : AppColors.textDark,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: AppColors.mode,
+      builder: (context, _, __) => Material(
+        color: Colors.transparent,
+        child: InkResponse(
+          onTap: () => _open(context),
+          radius: 28,
+          child: Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: subtle
+                  ? Colors.white.withValues(alpha: 0.9)
+                  : AppColors.surfaceCard,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: AppColors.outlineVariant.withValues(alpha: 0.4),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.shadow,
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              Symbols.help_rounded,
+              color: AppColors.brandDeep,
+              size: 22,
+            ),
+          ),
+        ),
       ),
-      onPressed: () => _open(context),
     );
   }
 
@@ -36,9 +64,9 @@ class FaqButton extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgCream,
+      backgroundColor: AppColors.bgSurface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (_) => _FaqSheet(items: items),
     );
@@ -57,46 +85,50 @@ class _FaqSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Container(
             width: 44,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.border,
+              color: AppColors.outlineVariant,
               borderRadius: BorderRadius.circular(8),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+            padding: const EdgeInsets.fromLTRB(24, 20, 16, 12),
             child: Row(
               children: [
                 Container(
-                  width: 36,
-                  height: 36,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
-                    color: AppColors.tealMuted,
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   alignment: Alignment.center,
                   child: Icon(
-                    HugeIcons.strokeRoundedHelpCircle,
-                    size: 18,
-                    color: AppColors.tealDark,
+                    Symbols.help_rounded,
+                    size: 22,
+                    color: AppColors.brandDeep,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
-                  child: Text(
-                    'Frequently Asked Questions',
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Frequently Asked', style: AppType.headlineLg),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Quick answers for this screen',
+                        style: AppType.bodySm,
+                      ),
+                    ],
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(HugeIcons.strokeRoundedCancel01),
+                  icon: Icon(Symbols.close_rounded, color: AppColors.outline),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -104,9 +136,9 @@ class _FaqSheet extends StatelessWidget {
           ),
           Flexible(
             child: ListView.separated(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
               itemCount: items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (_, i) => _FaqTile(item: items[i]),
             ),
           ),
@@ -124,39 +156,30 @@ class _FaqTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: AppColors.outlineVariant.withValues(alpha: 0.4),
+        ),
       ),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
-          tilePadding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          childrenPadding:
-              const EdgeInsets.fromLTRB(14, 0, 14, 14),
-          iconColor: AppColors.tealDark,
-          collapsedIconColor: AppColors.tealPrimary,
+          tilePadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+          childrenPadding: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+          iconColor: AppColors.brandPrimary,
+          collapsedIconColor: AppColors.outline,
           title: Text(
             item.question,
-            style: TextStyle(
-              fontSize: 14,
+            style: AppType.bodyMd.copyWith(
               fontWeight: FontWeight.w600,
-              color: AppColors.textDark,
-              height: 1.35,
+              color: AppColors.onSurface,
             ),
           ),
           children: [
             Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                item.answer,
-                style: TextStyle(
-                  fontSize: 13,
-                  color: AppColors.textMuted,
-                  height: 1.5,
-                ),
-              ),
+              child: Text(item.answer, style: AppType.bodySm),
             ),
           ],
         ),

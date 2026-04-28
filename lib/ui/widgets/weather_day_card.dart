@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/colors.dart';
+import '../../core/typography.dart';
 import '../../data/models/weather.dart';
 
 class WeatherDayCard extends StatelessWidget {
@@ -12,15 +13,15 @@ class WeatherDayCard extends StatelessWidget {
   Color _bg() {
     switch (day.condition) {
       case WeatherCondition.sunny:
-        return const Color(0xFFFFF1D6);
+        return AppColors.weatherSunnyBg;
       case WeatherCondition.partlyCloudy:
-        return const Color(0xFFE5EEF5);
+        return AppColors.weatherPartlyBg;
       case WeatherCondition.cloudy:
-        return const Color(0xFFE3E8EF);
+        return AppColors.weatherCloudyBg;
       case WeatherCondition.rainy:
-        return const Color(0xFFD9EAF2);
+        return AppColors.weatherRainyBg;
       case WeatherCondition.stormy:
-        return const Color(0xFFC9CFD8);
+        return AppColors.weatherStormyBg;
     }
   }
 
@@ -40,40 +41,50 @@ class WeatherDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bg = _bg();
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: _bg(),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.border),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [bg.withValues(alpha: 0.95), bg.withValues(alpha: 0.6)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.5),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.textMuted,
-            ),
+            label.toUpperCase(),
+            style: AppType.labelSm.copyWith(color: AppColors.onSurfaceVariant),
           ),
-          const SizedBox(height: 6),
-          Icon(day.icon, color: _iconColor(), size: 24),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+          Icon(day.icon, color: _iconColor(), size: 26),
+          const SizedBox(height: 8),
           Text(
             '${day.highC}°',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
+            style: AppType.bodyMd.copyWith(
+              fontWeight: FontWeight.w800,
+              color: AppColors.onSurface,
             ),
           ),
           Text(
             '${day.lowC}°',
-            style: TextStyle(
-              fontSize: 11,
-              color: AppColors.textMuted,
+            style: AppType.labelSm.copyWith(
+              color: AppColors.onSurfaceVariant,
+              letterSpacing: 0,
             ),
           ),
         ],

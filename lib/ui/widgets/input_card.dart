@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../core/colors.dart';
+import '../../core/typography.dart';
 
 class InputCard extends StatelessWidget {
   final IconData icon;
@@ -26,69 +27,63 @@ class InputCard extends StatelessWidget {
     final hasValue = value != null && value!.isNotEmpty;
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(24),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         decoration: BoxDecoration(
-          color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.surfaceCard,
+          borderRadius: BorderRadius.circular(24),
           border: Border.all(
             color: isError
-                ? Colors.redAccent
-                : AppColors.border,
-            width: 1,
+                ? const Color(0xFFBA1A1A)
+                : AppColors.outlineVariant.withValues(alpha: 0.4),
+            width: isError ? 1.5 : 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 12,
-              offset: Offset(0, 2),
-            ),
-          ],
+          boxShadow: AppColors.softWarm,
         ),
         child: Row(
           children: [
             Container(
-              width: 38,
-              height: 38,
+              width: 42,
+              height: 42,
               decoration: BoxDecoration(
-                color: AppColors.tealMuted,
-                borderRadius: BorderRadius.circular(12),
+                color: AppColors.brandSoft,
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Icon(icon, color: AppColors.tealPrimary, size: 20),
+              child: Icon(icon, color: AppColors.brandDeep, size: 22),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textDark,
+                    label.toUpperCase(),
+                    style: AppType.labelSm.copyWith(
+                      color: AppColors.brandDeep,
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4),
                   Text(
                     hasValue ? value! : hint,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 13,
+                    style: AppType.bodyMd.copyWith(
                       color: hasValue
-                          ? AppColors.tealDark
-                          : AppColors.textMuted,
+                          ? AppColors.onSurface
+                          : AppColors.outlineVariant,
                       fontWeight:
-                          hasValue ? FontWeight.w500 : FontWeight.w400,
+                          hasValue ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ],
               ),
             ),
-            Icon(HugeIcons.strokeRoundedArrowRight01,
-                color: AppColors.textSubtle, size: 20),
+            Icon(
+              Symbols.chevron_right_rounded,
+              color: AppColors.outline,
+              size: 22,
+            ),
           ],
         ),
       ),

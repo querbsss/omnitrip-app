@@ -2,6 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(dart --version)",
+      "Bash(dart analyze *)",
       "Bash(flutter doctor *)",
       "Bash(flutter --version)",
       "Bash(flutter create *)",
@@ -9,11 +10,10 @@
       "Bash(flutter analyze *)",
       "Bash(flutter build *)",
       "Bash(flutter test *)",
-      "Bash(python3 -c ' *)",
-      "Bash(awk 'NR<411 || NR>613' /c/Users/valen/omni_travel_app/lib/ui/planner_screen.dart)",
-      "Bash(mv /tmp/planner_screen_trimmed.dart /c/Users/valen/omni_travel_app/lib/ui/planner_screen.dart)",
-      "Bash(awk -F':' '{print $1\":\"$2}')",
-      "Bash(python /tmp/fix_const.py /c/Users/valen/omni_travel_app/lib/ui/booked_trips_screen.dart /c/Users/valen/omni_travel_app/lib/ui/login_screen.dart /c/Users/valen/omni_travel_app/lib/ui/planner_screen.dart /c/Users/valen/omni_travel_app/lib/ui/register_screen.dart /c/Users/valen/omni_travel_app/lib/ui/results_screen.dart /c/Users/valen/omni_travel_app/lib/ui/welcome_screen.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/input_card.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/insight_card.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/origin_picker_sheet.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/purpose_card.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/toggle_row.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/traffic_route_card.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/weather_day_card.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/animated_login_background.dart /c/Users/valen/omni_travel_app/lib/ui/widgets/pill_button.dart)"
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('.claude/settings.local.json'\\)\\)\")",
+      "Bash(flutter run *)"
     ]
   }
 }

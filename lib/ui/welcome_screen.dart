@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../core/colors.dart';
+import '../core/typography.dart';
 import 'widgets/faq_button.dart';
 import 'widgets/pill_button.dart';
-import 'widgets/theme_toggle_button.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -68,189 +69,286 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgCream,
-      body: SafeArea(
-        child: LayoutBuilder(builder: (context, constraints) {
-          final isShort = constraints.maxHeight < 640;
-          return Stack(
-            children: [
-              SingleChildScrollView(
-                child: ConstrainedBox(
-                  constraints:
-                      BoxConstraints(minHeight: constraints.maxHeight),
-                  child: IntrinsicHeight(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 16),
-                          _ImageCarousel(
-                            height: isShort ? 200 : 260,
-                            images: _carouselImages,
-                            activeIndex: _index,
-                          ),
-                          const SizedBox(height: 18),
-                          Transform.translate(
-                            offset: const Offset(-3.5, 0),
-                            child: Center(
-                              child: Image.asset(
-                                'assets/images/login_page/logo/logo_omnitrip.png',
-                                width: 280,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          ),
-                          Transform.translate(
-                            offset: const Offset(0, -8),
-                            child: Center(
-                              child: Text(
-                                'Your Smart\nTravel Planner',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppColors.textDark,
-                                  height: 1.15,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 450),
-                            child: Padding(
-                              key: ValueKey<int>(_index),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12),
-                              child: Text(
-                                _captions[_index % _captions.length],
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.textMuted,
-                                  height: 1.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 18),
-                          _Dots(
-                            count: _carouselImages.length,
-                            activeIndex: _index,
-                          ),
-                          const Spacer(),
-                          PillButton(
-                            label: 'Get Started',
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/register'),
-                          ),
-                          const SizedBox(height: 8),
-                          TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/login'),
-                            child: Text(
-                              'Log In',
-                              style: TextStyle(
-                                color: AppColors.tealDark,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      ),
+      backgroundColor: AppColors.bgSurface,
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _HeroBlock(
+                  images: _carouselImages,
+                  activeIndex: _index,
+                ),
+                Transform.translate(
+                  offset: const Offset(0, -56),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _WelcomeCard(
+                      caption: _captions[_index % _captions.length],
+                      onGetStarted: () =>
+                          Navigator.pushNamed(context, '/register'),
+                      onSignIn: () =>
+                          Navigator.pushNamed(context, '/login'),
                     ),
                   ),
                 ),
-              ),
-              const Positioned(
-                top: 8,
-                right: 8,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    FaqButton(screenKey: 'welcome'),
-                    ThemeToggleButton(),
-                  ],
+                Transform.translate(
+                  offset: const Offset(0, -40),
+                  child: _Dots(
+                    count: _carouselImages.length,
+                    activeIndex: _index,
+                  ),
                 ),
-              ),
-            ],
-          );
-        }),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
+          Positioned(
+            top: 50,
+            right: 16,
+            child: SafeArea(
+              bottom: false,
+              child: const FaqButton(screenKey: 'welcome', subtle: true),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _ImageCarousel extends StatelessWidget {
-  final double height;
+class _HeroBlock extends StatelessWidget {
   final List<String> images;
   final int activeIndex;
 
-  const _ImageCarousel({
-    required this.height,
-    required this.images,
-    required this.activeIndex,
-  });
+  const _HeroBlock({required this.images, required this.activeIndex});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: height,
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 800),
-        transitionBuilder: (child, animation) => FadeTransition(
-          opacity: animation,
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 1.04, end: 1.0).animate(animation),
-            child: child,
+      height: 360,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 800),
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 1.06, end: 1.0).animate(animation),
+                child: child,
+              ),
+            ),
+            child: Container(
+              key: ValueKey<int>(activeIndex),
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(images[activeIndex % images.length]),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
           ),
-        ),
-        child: _Hero(
-          key: ValueKey<int>(activeIndex),
-          path: images[activeIndex % images.length],
-        ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.35),
+                  Colors.transparent,
+                  AppColors.bgSurface.withValues(alpha: 0.4),
+                  AppColors.bgSurface,
+                ],
+                stops: const [0, 0.35, 0.85, 1],
+              ),
+            ),
+          ),
+          Positioned(
+            top: 64,
+            left: 24,
+            right: 100,
+            child: Row(
+              children: [
+                Container(
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Symbols.travel_explore_rounded,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                const Text(
+                  'OmniTrip',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _Hero extends StatelessWidget {
-  final String path;
-  const _Hero({super.key, required this.path});
+class _WelcomeCard extends StatelessWidget {
+  final String caption;
+  final VoidCallback onGetStarted;
+  final VoidCallback onSignIn;
+
+  const _WelcomeCard({
+    required this.caption,
+    required this.onGetStarted,
+    required this.onSignIn,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        image: DecorationImage(
-          image: AssetImage(path),
-          fit: BoxFit.cover,
-        ),
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: AppColors.softWarm,
       ),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Colors.transparent,
-              AppColors.bgCream.withValues(alpha: 0.18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: AppColors.secondaryContainer,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Symbols.auto_awesome_rounded,
+                  size: 14,
+                  color: AppColors.onSecondaryContainer,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'NEW ADVENTURES AWAIT',
+                  style: AppType.labelSm.copyWith(
+                    color: AppColors.onSecondaryContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text('Your Journey\nStarts Here', style: AppType.headlineXl),
+          const SizedBox(height: 10),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 400),
+            child: Text(
+              caption,
+              key: ValueKey(caption),
+              style: AppType.bodyMd,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            children: const [
+              Expanded(
+                child: _FeatureTile(
+                  icon: Symbols.explore_rounded,
+                  label: 'Curated\nGems',
+                  iconColor: Color(0xFFF28C55),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: _FeatureTile(
+                  icon: Symbols.cloud_off_rounded,
+                  label: 'Works\nOffline',
+                  iconColor: Color(0xFF586240),
+                ),
+              ),
             ],
           ),
-        ),
+          const SizedBox(height: 20),
+          PillButton(
+            label: 'Get Started',
+            icon: Symbols.arrow_forward_rounded,
+            onPressed: onGetStarted,
+          ),
+          const SizedBox(height: 14),
+          Center(
+            child: GestureDetector(
+              onTap: onSignIn,
+              behavior: HitTestBehavior.opaque,
+              child: RichText(
+                text: TextSpan(
+                  style: AppType.bodySm.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Already have an account? '),
+                    TextSpan(
+                      text: 'Sign In',
+                      style: AppType.labelMd.copyWith(
+                        color: AppColors.brandDeep,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FeatureTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color iconColor;
+
+  const _FeatureTile({
+    required this.icon,
+    required this.label,
+    required this.iconColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: iconColor, size: 22),
+          const SizedBox(height: 8),
+          Text(label, style: AppType.labelMd.copyWith(letterSpacing: 0)),
+        ],
       ),
     );
   }
@@ -270,10 +368,10 @@ class _Dots extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 250),
           margin: const EdgeInsets.symmetric(horizontal: 3),
-          width: active ? 18 : 6,
+          width: active ? 22 : 6,
           height: 6,
           decoration: BoxDecoration(
-            color: active ? AppColors.tealPrimary : AppColors.border,
+            color: active ? AppColors.brandPrimary : AppColors.outlineVariant,
             borderRadius: BorderRadius.circular(4),
           ),
         );

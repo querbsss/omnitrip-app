@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../core/colors.dart';
+import '../core/typography.dart';
 import '../data/datasets/destinations.dart';
 import '../data/datasets/origins.dart';
 import '../data/models/booked_trip.dart';
@@ -12,10 +13,9 @@ import '../data/services/booked_trips_service.dart';
 import '../data/services/plan_generator.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
-import 'widgets/faq_button.dart';
+import 'widgets/bottom_nav_pill.dart';
 import 'widgets/origin_picker_sheet.dart';
 import 'widgets/pill_button.dart';
-import 'widgets/theme_toggle_button.dart';
 
 class BookedTripsScreen extends StatefulWidget {
   const BookedTripsScreen({super.key});
@@ -75,9 +75,9 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
     final updated = await showModalBottomSheet<BookedTrip>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgCream,
+      backgroundColor: AppColors.bgSurface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (_) => _TripEditSheet(trip: trip),
     );
@@ -85,43 +85,37 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
     await _service.update(updated);
     await _refresh();
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: AppColors.tealDark,
-        behavior: SnackBarBehavior.floating,
-        content: Text('Trip updated.'),
-      ),
-    );
+    _toast('Trip updated.');
   }
 
   Future<void> _deleteTrip(BookedTrip trip) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgCream,
+        backgroundColor: AppColors.bgSurface,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
         ),
-        title: const Text('Remove this trip?'),
+        title: Text('Remove this trip?', style: AppType.titleLg),
         content: Text(
           '"${trip.title}" will be removed from your Booked Trips.',
-          style: TextStyle(color: AppColors.textMuted, fontSize: 13),
+          style: AppType.bodySm,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
             child: Text(
               'Cancel',
-              style: TextStyle(color: AppColors.textMuted),
+              style: AppType.labelMd.copyWith(color: AppColors.outline),
             ),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text(
+            child: Text(
               'Remove',
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.w700,
+              style: AppType.labelMd.copyWith(
+                color: const Color(0xFFBA1A1A),
+                fontWeight: FontWeight.w800,
               ),
             ),
           ),
@@ -132,11 +126,16 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
     await _service.remove(email: _email!, id: trip.id);
     await _refresh();
     if (!mounted) return;
+    _toast('Trip removed.');
+  }
+
+  void _toast(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: AppColors.tealDark,
+        backgroundColor: AppColors.brandDeep,
         behavior: SnackBarBehavior.floating,
-        content: Text('Trip removed.'),
+        shape: const StadiumBorder(),
+        content: Text(msg, style: TextStyle(color: AppColors.onBrand)),
       ),
     );
   }
@@ -144,107 +143,131 @@ class _BookedTripsScreenState extends State<BookedTripsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.bgCream,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgCream,
-        elevation: 0,
-        toolbarHeight: 100,
-        leading: IconButton(
-          icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        title: Image.asset(
-          'assets/images/login_page/logo/logo_omnitrip.png',
-          height: 80,
-          fit: BoxFit.contain,
-        ),
-        actions: const [
-          FaqButton(screenKey: 'booked'),
-          ThemeToggleButton(),
-        ],
-      ),
-      floatingActionButton: (!_loading && _trips.isNotEmpty)
-          ? FloatingActionButton.extended(
-              backgroundColor: AppColors.tealPrimary,
-              foregroundColor: Colors.white,
-              icon: const Icon(HugeIcons.strokeRoundedSparkles, size: 18),
-              label: const Text(
-                'New Trip',
-                style: TextStyle(fontWeight: FontWeight.w700),
-              ),
-              onPressed: () => Navigator.pushNamed(context, '/planner'),
-            )
-          : null,
-      body: SafeArea(
-        child: _loading
-            ? Center(
-                child: CircularProgressIndicator(
-                  color: AppColors.tealPrimary,
-                ),
-              )
-            : Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Booked Trips',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
+      backgroundColor: AppColors.bgSurface,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: _loading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.brandPrimary,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _trips.isEmpty
-                          ? 'You haven\'t saved any trips yet.'
-                          : '${_trips.length} saved trip${_trips.length == 1 ? '' : 's'} — tap one to view, edit, or remove.',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: AppColors.textMuted,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: _trips.isEmpty
-                          ? const _EmptyState()
-                          : RefreshIndicator(
-                              onRefresh: _refresh,
-                              color: AppColors.tealPrimary,
-                              child: ListView.separated(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                itemCount: _trips.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 12),
-                                itemBuilder: (ctx, i) {
-                                  final t = _trips[i];
-                                  return _TripCard(
-                                    trip: t,
-                                    destination:
-                                        Destinations.byId(t.destinationId),
-                                    onTap: () => _viewTrip(t),
-                                    onEdit: () => _editTrip(t),
-                                    onDelete: () => _deleteTrip(t),
-                                  );
-                                },
+                  )
+                : Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            _PillIcon(
+                              icon: Symbols.arrow_back_rounded,
+                              onTap: () => Navigator.maybePop(context),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'BOOKED',
+                                    style: AppType.labelSm.copyWith(
+                                      color: AppColors.outline,
+                                    ),
+                                  ),
+                                  Text('Your Trips', style: AppType.headlineLg),
+                                ],
                               ),
                             ),
-                    ),
-                    if (_trips.isEmpty) ...[
-                      PillButton(
-                        label: 'Plan a New Trip',
-                        icon: HugeIcons.strokeRoundedSparkles,
-                        onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                          context,
-                          '/planner',
-                          (_) => false,
+                          ],
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                        const SizedBox(height: 6),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 56),
+                          child: Text(
+                            _trips.isEmpty
+                                ? 'You haven\'t saved any trips yet.'
+                                : '${_trips.length} saved trip${_trips.length == 1 ? '' : 's'} — tap any to view.',
+                            style: AppType.bodySm,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Expanded(
+                          child: _trips.isEmpty
+                              ? const _EmptyState()
+                              : RefreshIndicator(
+                                  onRefresh: _refresh,
+                                  color: AppColors.brandPrimary,
+                                  child: ListView.separated(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding: const EdgeInsets.only(bottom: 110),
+                                    itemCount: _trips.length,
+                                    separatorBuilder: (_, __) =>
+                                        const SizedBox(height: 14),
+                                    itemBuilder: (ctx, i) {
+                                      final t = _trips[i];
+                                      return _TripCard(
+                                        trip: t,
+                                        destination:
+                                            Destinations.byId(t.destinationId),
+                                        onTap: () => _viewTrip(t),
+                                        onEdit: () => _editTrip(t),
+                                        onDelete: () => _deleteTrip(t),
+                                      );
+                                    },
+                                  ),
+                                ),
+                        ),
+                        if (_trips.isEmpty) ...[
+                          PillButton(
+                            label: 'Plan a New Trip',
+                            icon: Symbols.auto_awesome_rounded,
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/planner'),
+                          ),
+                          const SizedBox(height: 80),
+                        ],
+                      ],
+                    ),
+                  ),
+          ),
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: SafeArea(
+              child: BottomNavPill(current: BottomNavTab.trips),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PillIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _PillIcon({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.4),
+            ),
+          ),
+          child: Icon(icon, color: AppColors.brandDeep, size: 22),
+        ),
       ),
     );
   }
@@ -260,35 +283,29 @@ class _EmptyState extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 84,
-            height: 84,
+            width: 96,
+            height: 96,
             decoration: BoxDecoration(
-              color: AppColors.tealMuted,
-              borderRadius: BorderRadius.circular(24),
+              color: AppColors.brandSoft,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: AppColors.softWarm,
             ),
             child: Icon(
-              Icons.luggage_outlined,
-              size: 38,
-              color: AppColors.tealDark,
+              Symbols.luggage_rounded,
+              size: 44,
+              color: AppColors.brandDeep,
             ),
           ),
-          const SizedBox(height: 18),
-          Text(
-            'No saved trips yet',
-            style: TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textDark,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Generate a plan from the Planner and tap "Save Trip"\nto see it here.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: AppColors.textMuted,
-              height: 1.5,
+          const SizedBox(height: 22),
+          Text('No saved trips yet', style: AppType.headlineLg),
+          const SizedBox(height: 8),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Generate a plan from the Planner and tap "Save Trip" '
+              'to see it here.',
+              textAlign: TextAlign.center,
+              style: AppType.bodySm,
             ),
           ),
         ],
@@ -325,125 +342,112 @@ class _TripCard extends StatelessWidget {
     final daysLeft = tripDay.difference(today).inDays;
     final isPast = daysLeft < 0;
     return Opacity(
-      opacity: isPast ? 0.55 : 1.0,
+      opacity: isPast ? 0.6 : 1.0,
       child: InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(18),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.border),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.shadow,
-              blurRadius: 12,
-              offset: Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.tealMuted,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    destination.emoji,
-                    style: const TextStyle(fontSize: 26),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        trip.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.textDark,
-                        ),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: AppColors.softWarm,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          AppColors.brandFixedDim,
+                          AppColors.brandPrimary,
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        '${destination.name}, ${destination.region}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      destination.emoji,
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          trip.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppType.titleLg.copyWith(fontSize: 16),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          '${destination.name}, ${destination.region}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppType.bodySm,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                _MenuButton(
-                  onEdit: onEdit,
-                  onDelete: onDelete,
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _Chip(
-                  icon: HugeIcons.strokeRoundedCalendar03,
-                  label: dateLabel,
-                ),
-                _Chip(
-                  icon: HugeIcons.strokeRoundedTag01,
-                  label: BookedTrip.purposeLabel(trip.purpose),
-                ),
-                _CountdownChip(daysLeft: daysLeft),
-                if (trip.travelers > 1)
-                  _Chip(
-                    icon: HugeIcons.strokeRoundedUserMultiple,
-                    label: '${trip.travelers} pax',
-                  ),
-              ],
-            ),
-            if (trip.notes.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.bgCream,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  trip.notes,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.textDark,
-                    height: 1.4,
-                  ),
-                ),
+                  _MenuButton(onEdit: onEdit, onDelete: onDelete),
+                ],
               ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _Chip(
+                    icon: Symbols.calendar_today_rounded,
+                    label: dateLabel,
+                  ),
+                  _Chip(
+                    icon: Symbols.label_rounded,
+                    label: BookedTrip.purposeLabel(trip.purpose),
+                  ),
+                  _CountdownChip(daysLeft: daysLeft),
+                  if (trip.travelers > 1)
+                    _Chip(
+                      icon: Symbols.group_rounded,
+                      label: '${trip.travelers} pax',
+                    ),
+                ],
+              ),
+              if (trip.notes.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 10,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLow,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    trip.notes,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppType.bodySm.copyWith(
+                      color: AppColors.onSurface,
+                    ),
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -460,45 +464,38 @@ class _CountdownChip extends StatelessWidget {
     Color fg;
     if (daysLeft < 0) {
       label = 'Past';
-      bg = AppColors.border;
-      fg = AppColors.textMuted;
+      bg = AppColors.surfaceContainer;
+      fg = AppColors.onSurfaceVariant;
     } else if (daysLeft == 0) {
       label = 'Today!';
-      bg = const Color(0xFFFFE4B5);
-      fg = const Color(0xFFB45309);
+      bg = AppColors.warnBg;
+      fg = AppColors.warnText;
     } else if (daysLeft == 1) {
       label = 'Tomorrow';
-      bg = const Color(0xFFFFE4B5);
-      fg = const Color(0xFFB45309);
+      bg = AppColors.warnBg;
+      fg = AppColors.warnText;
     } else if (daysLeft <= 30) {
       label = 'In $daysLeft days';
-      bg = AppColors.tealMuted;
-      fg = AppColors.tealDark;
+      bg = AppColors.secondaryContainer;
+      fg = AppColors.onSecondaryContainer;
     } else {
       final months = (daysLeft / 30).round();
       label = months == 1 ? 'In 1 month' : 'In $months months';
-      bg = AppColors.tealMuted;
-      fg = AppColors.tealDark;
+      bg = AppColors.secondaryContainer;
+      fg = AppColors.onSecondaryContainer;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(HugeIcons.strokeRoundedClock03, size: 12, color: fg),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: fg,
-            ),
-          ),
+          Icon(Symbols.schedule_rounded, size: 14, color: fg),
+          const SizedBox(width: 5),
+          Text(label, style: AppType.labelMd.copyWith(color: fg)),
         ],
       ),
     );
@@ -514,25 +511,21 @@ class _Chip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.tealMuted,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: AppColors.tealDark),
-          const SizedBox(width: 4),
+          Icon(icon, size: 14, color: AppColors.brandDeep),
+          const SizedBox(width: 5),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.tealDark,
-            ),
+            style: AppType.labelMd.copyWith(color: AppColors.onSurface),
           ),
         ],
       ),
@@ -551,12 +544,12 @@ class _MenuButton extends StatelessWidget {
     return PopupMenuButton<String>(
       tooltip: 'Trip options',
       icon: Icon(
-        HugeIcons.strokeRoundedMoreVertical,
-        color: AppColors.textMuted,
-        size: 20,
+        Symbols.more_vert_rounded,
+        color: AppColors.outline,
+        size: 22,
       ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      color: AppColors.cardWhite,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      color: AppColors.surfaceCard,
       onSelected: (v) {
         if (v == 'edit') onEdit();
         if (v == 'delete') onDelete();
@@ -566,10 +559,13 @@ class _MenuButton extends StatelessWidget {
           value: 'edit',
           child: Row(
             children: [
-              Icon(HugeIcons.strokeRoundedEdit02,
-                  size: 16, color: AppColors.tealDark),
-              SizedBox(width: 8),
-              Text('Edit'),
+              Icon(
+                Symbols.edit_rounded,
+                size: 18,
+                color: AppColors.brandDeep,
+              ),
+              const SizedBox(width: 10),
+              Text('Edit', style: AppType.bodySm.copyWith(color: AppColors.onSurface)),
             ],
           ),
         ),
@@ -577,10 +573,18 @@ class _MenuButton extends StatelessWidget {
           value: 'delete',
           child: Row(
             children: [
-              Icon(HugeIcons.strokeRoundedDelete02,
-                  size: 16, color: Colors.redAccent),
-              SizedBox(width: 8),
-              Text('Remove'),
+              Icon(
+                Symbols.delete_rounded,
+                size: 18,
+                color: const Color(0xFFBA1A1A),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                'Remove',
+                style: AppType.bodySm.copyWith(
+                  color: const Color(0xFFBA1A1A),
+                ),
+              ),
             ],
           ),
         ),
@@ -633,15 +637,13 @@ class _TripEditSheetState extends State<_TripEditSheet> {
     final selected = await showModalBottomSheet<Origin>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgCream,
+      backgroundColor: AppColors.bgSurface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (_) => const OriginPickerSheet(),
     );
-    if (selected != null) {
-      setState(() => _origin = selected);
-    }
+    if (selected != null) setState(() => _origin = selected);
   }
 
   Future<void> _pickDate() async {
@@ -653,11 +655,11 @@ class _TripEditSheetState extends State<_TripEditSheet> {
       lastDate: DateTime(now.year + 2),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(
-            primary: AppColors.tealPrimary,
-            onPrimary: Colors.white,
-            surface: AppColors.cardWhite,
-            onSurface: AppColors.textDark,
+          colorScheme: Theme.of(ctx).colorScheme.copyWith(
+            primary: AppColors.brandPrimary,
+            onPrimary: AppColors.onBrand,
+            surface: AppColors.surfaceCard,
+            onSurface: AppColors.onSurface,
           ),
         ),
         child: child!,
@@ -670,9 +672,13 @@ class _TripEditSheetState extends State<_TripEditSheet> {
     if (_titleCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          backgroundColor: AppColors.tealDark,
+          backgroundColor: AppColors.brandDeep,
           behavior: SnackBarBehavior.floating,
-          content: Text('Please enter a trip title.'),
+          shape: const StadiumBorder(),
+          content: Text(
+            'Please enter a trip title.',
+            style: TextStyle(color: AppColors.onBrand),
+          ),
         ),
       );
       return;
@@ -709,31 +715,27 @@ class _TripEditSheetState extends State<_TripEditSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Container(
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: AppColors.outlineVariant,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+              padding: const EdgeInsets.fromLTRB(24, 16, 12, 8),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      'Edit Trip',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textDark,
-                      ),
-                    ),
+                    child: Text('Edit Trip', style: AppType.headlineLg),
                   ),
                   IconButton(
-                    icon: const Icon(HugeIcons.strokeRoundedCancel01),
+                    icon: Icon(
+                      Symbols.close_rounded,
+                      color: AppColors.outline,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
@@ -741,139 +743,156 @@ class _TripEditSheetState extends State<_TripEditSheet> {
             ),
             Flexible(
               child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 28),
                 children: [
                   TextField(
                     controller: _titleCtrl,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Trip Title',
                       hintText: 'e.g., Summer in Cebu',
-                      prefixIcon: Icon(HugeIcons.strokeRoundedTag01),
+                      prefixIcon: Icon(
+                        Symbols.label_rounded,
+                        color: AppColors.outline,
+                      ),
                     ),
                     textInputAction: TextInputAction.next,
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   InkWell(
                     onTap: _pickDate,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(999),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Travel Date',
-                        prefixIcon: Icon(HugeIcons.strokeRoundedCalendar03),
+                        prefixIcon: Icon(
+                          Symbols.calendar_today_rounded,
+                          color: AppColors.outline,
+                        ),
                       ),
                       child: Text(
                         DateFormat('EEE, MMM d, y').format(_date),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textDark,
-                          fontWeight: FontWeight.w500,
+                        style: AppType.bodyMd.copyWith(
+                          color: AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   Text(
-                    'Travel Purpose',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
+                    'TRAVEL PURPOSE',
+                    style: AppType.labelSm.copyWith(color: AppColors.outline),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _purposeChoice('vacation', 'Vacation',
-                          HugeIcons.strokeRoundedBeach),
-                      _purposeChoice('date_idea', 'Date Idea',
-                          HugeIcons.strokeRoundedFavourite),
-                      _purposeChoice('school_business', 'School / Business',
-                          HugeIcons.strokeRoundedBriefcase01),
+                      _purposeChoice(
+                        'vacation',
+                        'Vacation',
+                        Symbols.beach_access_rounded,
+                      ),
+                      _purposeChoice(
+                        'date_idea',
+                        'Date Idea',
+                        Symbols.favorite_rounded,
+                      ),
+                      _purposeChoice(
+                        'school_business',
+                        'School / Business',
+                        Symbols.work_rounded,
+                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   InkWell(
                     onTap: _pickOrigin,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(999),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Coming from',
-                        prefixIcon: Icon(HugeIcons.strokeRoundedRoute02),
-                        suffixIcon: Icon(HugeIcons.strokeRoundedArrowDown01),
+                        prefixIcon: Icon(
+                          Symbols.route_rounded,
+                          color: AppColors.outline,
+                        ),
+                        suffixIcon: Icon(
+                          Symbols.expand_more_rounded,
+                          color: AppColors.outline,
+                        ),
                       ),
                       child: Text(
                         _origin == null
                             ? (widget.trip.originLocation.isEmpty
-                                ? 'Select your starting city or province'
+                                ? 'Select your starting city'
                                 : '${widget.trip.originLocation} (tap to update)')
                             : '${_origin!.name}, ${_origin!.province}',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                        style: AppType.bodyMd.copyWith(
                           color: _origin == null
-                              ? AppColors.textSubtle
-                              : AppColors.textDark,
+                              ? AppColors.outlineVariant
+                              : AppColors.onSurface,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.only(left: 4, right: 12),
-                        child: Icon(
-                          HugeIcons.strokeRoundedUserMultiple,
-                          size: 18,
-                          color: AppColors.tealDark,
-                        ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceCard,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: AppColors.outlineVariant.withValues(alpha: 0.4),
                       ),
-                      Expanded(
-                        child: Text(
-                          'Travelers',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.textDark,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Symbols.group_rounded,
+                          size: 22,
+                          color: AppColors.brandDeep,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Travelers',
+                            style: AppType.bodyMd.copyWith(
+                              color: AppColors.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
-                      ),
-                      _StepBtn(
-                        icon: Icons.remove,
-                        enabled: _travelers > 1,
-                        onTap: () => setState(() => _travelers--),
-                      ),
-                      SizedBox(
-                        width: 36,
-                        child: Text(
-                          '$_travelers',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
+                        _StepBtn(
+                          icon: Symbols.remove_rounded,
+                          enabled: _travelers > 1,
+                          onTap: () => setState(() => _travelers--),
+                        ),
+                        SizedBox(
+                          width: 36,
+                          child: Text(
+                            '$_travelers',
+                            textAlign: TextAlign.center,
+                            style: AppType.titleLg,
                           ),
                         ),
-                      ),
-                      _StepBtn(
-                        icon: Icons.add,
-                        enabled: _travelers < 20,
-                        onTap: () => setState(() => _travelers++),
-                      ),
-                    ],
+                        _StepBtn(
+                          icon: Symbols.add_rounded,
+                          enabled: _travelers < 20,
+                          onTap: () => setState(() => _travelers++),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 18),
                   Text(
-                    'Transport',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
+                    'TRANSPORT',
+                    style: AppType.labelSm.copyWith(color: AppColors.outline),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
@@ -881,59 +900,55 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                       _transportChoice(
                         'commute',
                         'Public Commute',
-                        HugeIcons.strokeRoundedBus01,
+                        Symbols.directions_bus_rounded,
                         true,
                       ),
                       _transportChoice(
                         'private',
                         'Private Vehicle',
-                        HugeIcons.strokeRoundedCar01,
+                        Symbols.directions_car_rounded,
                         privateAllowed,
                       ),
                     ],
                   ),
                   if (!privateAllowed)
                     Padding(
-                      padding: EdgeInsets.only(top: 6),
+                      padding: const EdgeInsets.only(top: 8),
                       child: Text(
                         'Private vehicle isn\'t practical for this destination.',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.textMuted,
+                        style: AppType.bodySm.copyWith(
                           fontStyle: FontStyle.italic,
                         ),
                       ),
                     ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(
+                    title: Text(
                       'Include Weather Forecast',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: AppType.bodyMd.copyWith(
+                        color: AppColors.onSurface,
                       ),
                     ),
                     value: _weather,
                     activeColor: Colors.white,
-                    activeTrackColor: AppColors.tealPrimary,
+                    activeTrackColor: AppColors.brandPrimary,
                     onChanged: (v) => setState(() => _weather = v),
                   ),
                   SwitchListTile.adaptive(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text(
+                    title: Text(
                       'Check Traffic & Routes',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                      style: AppType.bodyMd.copyWith(
+                        color: AppColors.onSurface,
                       ),
                     ),
                     value: _traffic,
                     activeColor: Colors.white,
-                    activeTrackColor: AppColors.tealPrimary,
+                    activeTrackColor: AppColors.brandPrimary,
                     onChanged: (v) => setState(() => _traffic = v),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   TextField(
                     controller: _notesCtrl,
                     maxLines: 3,
@@ -944,10 +959,10 @@ class _TripEditSheetState extends State<_TripEditSheet> {
                       alignLabelWithHint: true,
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
                   PillButton(
                     label: 'Save Changes',
-                    icon: HugeIcons.strokeRoundedTick02,
+                    icon: Symbols.check_rounded,
                     onPressed: _save,
                   ),
                 ],
@@ -960,39 +975,44 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   }
 
   Widget _transportChoice(
-      String value, String label, IconData icon, bool enabled) {
+    String value,
+    String label,
+    IconData icon,
+    bool enabled,
+  ) {
     final selected = _transportMode == value;
     return Opacity(
       opacity: enabled ? 1 : 0.45,
       child: InkWell(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(999),
         onTap: enabled ? () => setState(() => _transportMode = value) : null,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
-            color: selected ? AppColors.tealSoft : AppColors.cardWhite,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: selected ? AppColors.tealPrimary : AppColors.border,
-              width: selected ? 1.5 : 1,
-            ),
+            color: selected
+                ? AppColors.secondaryContainer
+                : AppColors.surfaceLow,
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
-                size: 14,
-                color: selected ? AppColors.tealDark : AppColors.tealPrimary,
+                size: 16,
+                color: selected
+                    ? AppColors.onSecondaryContainer
+                    : AppColors.brandDeep,
+                fill: selected ? 1 : 0,
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 8),
               Text(
                 label,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? AppColors.tealDark : AppColors.textDark,
+                style: AppType.labelMd.copyWith(
+                  color: selected
+                      ? AppColors.onSecondaryContainer
+                      : AppColors.onSurface,
                 ),
               ),
             ],
@@ -1005,31 +1025,34 @@ class _TripEditSheetState extends State<_TripEditSheet> {
   Widget _purposeChoice(String value, String label, IconData icon) {
     final selected = _purpose == value;
     return InkWell(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius: BorderRadius.circular(999),
       onTap: () => setState(() => _purpose = value),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? AppColors.tealSoft : AppColors.cardWhite,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: selected ? AppColors.tealPrimary : AppColors.border,
-            width: selected ? 1.5 : 1,
-          ),
+          color: selected
+              ? AppColors.secondaryContainer
+              : AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(999),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 14,
-                color: selected ? AppColors.tealDark : AppColors.tealPrimary),
-            const SizedBox(width: 6),
+            Icon(
+              icon,
+              size: 16,
+              color: selected
+                  ? AppColors.onSecondaryContainer
+                  : AppColors.brandDeep,
+              fill: selected ? 1 : 0,
+            ),
+            const SizedBox(width: 8),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: selected ? AppColors.tealDark : AppColors.textDark,
+              style: AppType.labelMd.copyWith(
+                color: selected
+                    ? AppColors.onSecondaryContainer
+                    : AppColors.onSurface,
               ),
             ),
           ],
@@ -1052,18 +1075,22 @@ class _StepBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
+    return InkResponse(
       onTap: enabled ? onTap : null,
+      radius: 22,
       child: Container(
-        width: 32,
-        height: 32,
+        width: 34,
+        height: 34,
         decoration: BoxDecoration(
-          color: enabled ? AppColors.tealPrimary : AppColors.border,
-          borderRadius: BorderRadius.circular(10),
+          color: enabled ? AppColors.brandPrimary : AppColors.surfaceLow,
+          shape: BoxShape.circle,
         ),
         alignment: Alignment.center,
-        child: Icon(icon, size: 18, color: Colors.white),
+        child: Icon(
+          icon,
+          size: 18,
+          color: enabled ? AppColors.onBrand : AppColors.outlineVariant,
+        ),
       ),
     );
   }

@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
 import 'package:intl/intl.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/colors.dart';
+import '../core/typography.dart';
+import '../data/models/activity.dart';
 import '../data/models/booked_trip.dart';
 import '../data/models/travel_plan.dart';
 import '../data/services/booked_trips_service.dart';
 import '../data/services/session_service.dart';
 import 'results_args.dart';
 import 'widgets/faq_button.dart';
-import 'widgets/insight_card.dart';
 import 'widgets/pill_button.dart';
-import 'widgets/theme_toggle_button.dart';
+import 'widgets/section_header.dart';
 import 'widgets/traffic_route_card.dart';
 import 'widgets/weather_day_card.dart';
 
@@ -43,9 +44,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final result = await showModalBottomSheet<_SaveTripResult>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.bgCream,
+      backgroundColor: AppColors.bgSurface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
       ),
       builder: (_) => _SaveTripSheet(plan: plan),
     );
@@ -81,91 +82,83 @@ class _ResultsScreenState extends State<ResultsScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
-        backgroundColor: AppColors.bgCream,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        backgroundColor: AppColors.bgSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
         insetPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 18),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 22),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
-                    color: AppColors.tealMuted,
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.brandSoft,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: AppColors.ctaGlow,
                   ),
                   alignment: Alignment.center,
                   child: Icon(
-                    HugeIcons.strokeRoundedCheckmarkCircle02,
-                    size: 36,
-                    color: AppColors.tealDark,
+                    Symbols.check_circle_rounded,
+                    size: 38,
+                    color: AppColors.brandDeep,
+                    fill: 1,
                   ),
                 ),
-                const SizedBox(height: 14),
-                Text(
-                  'Trip Saved!',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textDark,
-                  ),
-                ),
+                const SizedBox(height: 18),
+                Text('Trip Saved!', style: AppType.headlineLg),
                 const SizedBox(height: 4),
                 Text(
                   trip.title,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.tealDark,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppType.labelMd.copyWith(color: AppColors.brandDeep),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.cardWhite,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.border),
+                    color: AppColors.surfaceCard,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.outlineVariant.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Column(
                     children: [
                       _BreakdownRow(
-                        icon: HugeIcons.strokeRoundedLocation01,
+                        icon: Symbols.location_on_rounded,
                         label: 'Destination',
                         value:
                             '${plan.destination.name}, ${plan.destination.region}',
                       ),
                       _BreakdownRow(
-                        icon: HugeIcons.strokeRoundedCalendar03,
+                        icon: Symbols.calendar_today_rounded,
                         label: 'Travel Date',
                         value: dateLabel,
                       ),
                       _BreakdownRow(
-                        icon: HugeIcons.strokeRoundedTag01,
+                        icon: Symbols.label_rounded,
                         label: 'Purpose',
                         value: BookedTrip.purposeLabel(plan.purpose),
                       ),
                       if (plan.weatherAware)
                         _BreakdownRow(
-                          icon: HugeIcons.strokeRoundedSun03,
+                          icon: Symbols.sunny_rounded,
                           label: 'Weather',
-                          value:
-                              '${plan.forecast.season} • $lows°–$highs°C',
+                          value: '${plan.forecast.season} • $lows°–$highs°C',
                         ),
                       if (plan.trafficAware)
                         _BreakdownRow(
-                          icon: HugeIcons.strokeRoundedCar01,
+                          icon: Symbols.directions_car_rounded,
                           label: 'Route',
                           value:
                               '${plan.routeInfo.transportMode} • ${plan.routeInfo.estimatedTravel}',
                         ),
                       _BreakdownRow(
-                        icon: HugeIcons.strokeRoundedSparkles,
+                        icon: Symbols.auto_awesome_rounded,
                         label: 'Activities',
                         value:
                             '${plan.activities.length} hand-picked for you',
@@ -174,29 +167,21 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 Text(
                   '🎉  Congrats!',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.tealDark,
-                  ),
+                  style: AppType.titleLg.copyWith(color: AppColors.brandDeep),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'You can find your trips in the\nBooked Trips page.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textMuted,
-                    height: 1.5,
-                  ),
+                  style: AppType.bodySm,
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 22),
                 PillButton(
                   label: 'View Booked Trips',
-                  icon: HugeIcons.strokeRoundedArrowRight01,
+                  icon: Symbols.arrow_forward_rounded,
                   onPressed: () => Navigator.pop(ctx, true),
                 ),
                 const SizedBox(height: 6),
@@ -204,9 +189,8 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   onPressed: () => Navigator.pop(ctx, false),
                   child: Text(
                     'Stay here',
-                    style: TextStyle(
-                      color: AppColors.textMuted,
-                      fontWeight: FontWeight.w600,
+                    style: AppType.labelMd.copyWith(
+                      color: AppColors.outline,
                     ),
                   ),
                 ),
@@ -236,215 +220,148 @@ class _ResultsScreenState extends State<ResultsScreen> {
     final alreadySaved = _savedTripId != null;
 
     return Scaffold(
-      backgroundColor: AppColors.bgCream,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgCream,
-        elevation: 0,
-        toolbarHeight: 160,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(HugeIcons.strokeRoundedArrowLeft01, size: 22),
-          onPressed: () => Navigator.maybePop(context),
-        ),
-        title: Transform.translate(
-          offset: const Offset(-3, 0),
-          child: Image.asset(
-            'assets/images/login_page/logo/logo_omnitrip.png',
-            height: 140,
-            fit: BoxFit.contain,
-          ),
-        ),
-        actions: const [
-          FaqButton(screenKey: 'results'),
-          ThemeToggleButton(),
-        ],
-      ),
+      backgroundColor: AppColors.bgSurface,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            // ── Hero header ──────────────────
-            Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: AppColors.cardWhite,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.border),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 14,
-                    offset: Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: AppColors.tealMuted,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      plan.destination.emoji,
-                      style: const TextStyle(fontSize: 28),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Your Smart Plan:',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: AppColors.textMuted,
-                            fontWeight: FontWeight.w500,
-                          ),
+            // Top bar
+            Row(
+              children: [
+                _PillIcon(
+                  icon: Symbols.arrow_back_rounded,
+                  onTap: () => Navigator.maybePop(context),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'DISCOVERY RESULTS',
+                        style: AppType.labelSm.copyWith(
+                          color: AppColors.outline,
                         ),
-                        Text(
-                          '${plan.destination.name}, Philippines',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Row(
-                          children: [
-                            Icon(HugeIcons.strokeRoundedCalendar03,
-                                size: 12, color: AppColors.tealDark),
-                            const SizedBox(width: 4),
-                            Text(
-                              dateLabel,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: AppColors.tealDark,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                      ),
+                      Text(
+                        plan.destination.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppType.titleLg,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                FaqButton(screenKey: 'results', subtle: true),
+              ],
+            ),
+            const SizedBox(height: 18),
+
+            // Featured hero card (8/12 equivalent)
+            _FeaturedCard(plan: plan, dateLabel: dateLabel),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _StatChip(
+                    icon: Symbols.group_rounded,
+                    label:
+                        '${plan.travelers} ${plan.travelers == 1 ? "Traveler" : "Travelers"}',
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: _StatChip(
+                    icon: Symbols.label_rounded,
+                    label: BookedTrip.purposeLabel(plan.purpose),
+                  ),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 22),
-            // ── Weather Forecast ─────────────
+            const SizedBox(height: 28),
             if (plan.weatherAware) ...[
-              const _SectionTitle('Weather Forecast'),
-              const SizedBox(height: 10),
-              LayoutBuilder(builder: (ctx, c) {
-                final spacing = 8.0;
-                final w = (c.maxWidth - (spacing * 4)) / 5;
-                return Row(
-                  children: [
-                    for (int i = 0; i < plan.forecast.days.length; i++) ...[
-                      SizedBox(
-                        width: w,
-                        child: WeatherDayCard(
-                          day: plan.forecast.days[i],
-                          label: '${i + 1}-day',
-                        ),
-                      ),
-                      if (i < plan.forecast.days.length - 1)
-                        SizedBox(width: spacing),
-                    ],
-                  ],
-                );
-              }),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  color: AppColors.tealMuted,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(HugeIcons.strokeRoundedInformationCircle,
-                        size: 16, color: AppColors.tealDark),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        plan.forecast.advisory,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppColors.tealDark,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+              SectionHeader(
+                title: 'Weather Forecast',
+                subtitle: plan.forecast.season,
               ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 14),
+              LayoutBuilder(
+                builder: (ctx, c) {
+                  const spacing = 8.0;
+                  final w = (c.maxWidth - (spacing * 4)) / 5;
+                  return Row(
+                    children: [
+                      for (int i = 0; i < plan.forecast.days.length; i++) ...[
+                        SizedBox(
+                          width: w,
+                          child: WeatherDayCard(
+                            day: plan.forecast.days[i],
+                            label: 'D${i + 1}',
+                          ),
+                        ),
+                        if (i < plan.forecast.days.length - 1)
+                          const SizedBox(width: spacing),
+                      ],
+                    ],
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+              _AdvisoryBanner(
+                icon: Symbols.info_rounded,
+                text: plan.forecast.advisory,
+              ),
+              const SizedBox(height: 28),
             ],
 
-            // ── Traffic & Route ──────────────
-            const _SectionTitle('Traffic & Route'),
-            const SizedBox(height: 10),
+            // Traffic & Route
+            SectionHeader(
+              title: 'Traffic & Route',
+              subtitle: plan.routeInfo.transportMode,
+            ),
+            const SizedBox(height: 14),
             TrafficRouteCard(
               route: plan.routeInfo,
               onOpenMap: () => _openMap(context, plan),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             _RouteDetails(plan: plan),
-            const SizedBox(height: 22),
 
-            // ── Trip Details (origin / travelers / transport) ──
-            const _SectionTitle('Trip Details'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 28),
+            SectionHeader(title: 'Trip Details'),
+            const SizedBox(height: 14),
             _TripDetailsCard(plan: plan),
-            const SizedBox(height: 22),
 
-            // ── Cost Estimate ────────────────
-            const _SectionTitle('Cost Estimate (PHP)'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 28),
+            SectionHeader(
+              title: 'Cost Estimate',
+              subtitle: 'Philippine Peso (PHP)',
+            ),
+            const SizedBox(height: 14),
             _CostEstimateCard(plan: plan),
-            const SizedBox(height: 22),
 
-            // ── Insights & Activities ────────
-            const _SectionTitle('Destination Insights & Activities'),
-            const SizedBox(height: 10),
+            const SizedBox(height: 28),
+            SectionHeader(
+              title: 'Activities',
+              subtitle: 'Hand-picked for your trip',
+            ),
+            const SizedBox(height: 14),
             if (plan.activities.isEmpty)
               Padding(
-                padding: EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 24),
                 child: Text(
                   'No activities found for this combination.',
-                  style: TextStyle(color: AppColors.textMuted),
+                  style: AppType.bodySm,
                 ),
               )
             else
-              SizedBox(
-                height: 180,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: plan.activities.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 10),
-                  itemBuilder: (ctx, i) => InsightCard(
-                    activity: plan.activities[i],
-                    width: 150,
-                  ),
-                ),
-              ),
-            const SizedBox(height: 18),
+              _ActivityBento(activities: plan.activities),
 
-            // ── Packing tips ─────────────────
             if (plan.packingTips.isNotEmpty) ...[
-              const _SectionTitle('What to Pack'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 28),
+              SectionHeader(title: 'What to Pack'),
+              const SizedBox(height: 14),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -452,24 +369,24 @@ class _ResultsScreenState extends State<ResultsScreen> {
                   for (final tip in plan.packingTips)
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 8),
+                          horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.cardWhite,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: AppColors.border),
+                        color: AppColors.surfaceLow,
+                        borderRadius: BorderRadius.circular(999),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(HugeIcons.strokeRoundedTick02,
-                              size: 14, color: AppColors.tealPrimary),
+                          Icon(
+                            Symbols.check_rounded,
+                            size: 14,
+                            color: AppColors.brandPrimary,
+                          ),
                           const SizedBox(width: 6),
                           Text(
                             tip,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppColors.textDark,
-                              fontWeight: FontWeight.w500,
+                            style: AppType.labelMd.copyWith(
+                              color: AppColors.onSurface,
                             ),
                           ),
                         ],
@@ -477,74 +394,72 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     ),
                 ],
               ),
-              const SizedBox(height: 22),
             ],
 
-            // ── Quick insights ───────────────
             if (plan.insights.isNotEmpty) ...[
-              const _SectionTitle('Did You Know?'),
-              const SizedBox(height: 10),
+              const SizedBox(height: 28),
+              SectionHeader(title: 'Did You Know?'),
+              const SizedBox(height: 14),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
-                  color: AppColors.cardWhite,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.border),
+                  color: AppColors.surfaceCard,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: AppColors.softWarm,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    for (final i in plan.insights) ...[
+                    for (int i = 0; i < plan.insights.length; i++) ...[
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Padding(
-                            padding: EdgeInsets.only(top: 6),
-                            child: Icon(Icons.circle,
-                                size: 6, color: AppColors.tealPrimary),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              i,
-                              style: TextStyle(
-                                fontSize: 13,
-                                height: 1.45,
-                                color: AppColors.textDark,
-                              ),
+                          Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: AppColors.brandPrimary,
+                              shape: BoxShape.circle,
                             ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(plan.insights[i], style: AppType.bodySm),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 6),
+                      if (i < plan.insights.length - 1)
+                        const SizedBox(height: 8),
                     ],
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
             ],
 
-            // ── Save trip ────────────────────
+            const SizedBox(height: 28),
             if (alreadySaved)
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                 decoration: BoxDecoration(
-                  color: AppColors.tealMuted,
-                  borderRadius: BorderRadius.circular(28),
+                  color: AppColors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(999),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(HugeIcons.strokeRoundedCheckmarkCircle02,
-                        size: 18, color: AppColors.tealDark),
-                    SizedBox(width: 8),
+                    Icon(
+                      Symbols.check_circle_rounded,
+                      size: 20,
+                      color: AppColors.onSecondaryContainer,
+                      fill: 1,
+                    ),
+                    const SizedBox(width: 10),
                     Text(
                       'Saved to Booked Trips',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.tealDark,
+                      style: AppType.labelMd.copyWith(
+                        color: AppColors.onSecondaryContainer,
                       ),
                     ),
                   ],
@@ -553,25 +468,499 @@ class _ResultsScreenState extends State<ResultsScreen> {
             else
               PillButton(
                 label: 'Save to Booked Trips',
-                icon: HugeIcons.strokeRoundedBookmarkAdd01,
+                icon: Symbols.bookmark_add_rounded,
                 onPressed: () => _saveTrip(plan),
               ),
-            const SizedBox(height: 10),
-            TextButton.icon(
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(HugeIcons.strokeRoundedRefresh,
-                  size: 16, color: AppColors.tealDark),
-              label: Text(
-                'Plan Another Trip',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.tealDark,
+            const SizedBox(height: 12),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(
+                  Symbols.refresh_rounded,
+                  size: 16,
+                  color: AppColors.brandDeep,
+                ),
+                label: Text(
+                  'Plan Another Trip',
+                  style: AppType.labelMd.copyWith(
+                    color: AppColors.brandDeep,
+                  ),
                 ),
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _PillIcon extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  const _PillIcon({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 26,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: AppColors.surfaceCard,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.4),
+            ),
+          ),
+          child: Icon(icon, color: AppColors.brandDeep, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeaturedCard extends StatelessWidget {
+  final TravelPlan plan;
+  final String dateLabel;
+
+  const _FeaturedCard({required this.plan, required this.dateLabel});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 240,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.brandDeep,
+                      AppColors.brandPrimary,
+                      AppColors.secondary,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -30,
+              top: -10,
+              child: Opacity(
+                opacity: 0.18,
+                child: Text(
+                  plan.destination.emoji,
+                  style: const TextStyle(fontSize: 220),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.35),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              right: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Symbols.star_rounded,
+                      size: 16,
+                      color: AppColors.brandPrimary,
+                      fill: 1,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '4.${(plan.destination.name.length % 9) + 1}',
+                      style: AppType.labelMd.copyWith(
+                        color: AppColors.brandDeep,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.brandPrimary.withValues(alpha: 0.95),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'CURATED',
+                  style: AppType.labelSm.copyWith(color: Colors.white),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    plan.destination.region.toUpperCase(),
+                    style: AppType.labelSm.copyWith(
+                      color: Colors.white.withValues(alpha: 0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    plan.destination.name,
+                    style: AppType.headlineXl.copyWith(
+                      color: Colors.white,
+                      letterSpacing: -0.6,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Symbols.calendar_today_rounded,
+                        size: 14,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        dateLabel,
+                        style: AppType.labelMd.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _StatChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: AppColors.softWarm,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: AppColors.brandDeep, size: 18),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppType.labelMd.copyWith(color: AppColors.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AdvisoryBanner extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _AdvisoryBanner({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.brandSoft.withValues(alpha: 0.6),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.brandDeep),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: AppType.bodySm.copyWith(color: AppColors.brandDeep),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityBento extends StatelessWidget {
+  final List<TravelActivity> activities;
+  const _ActivityBento({required this.activities});
+
+  @override
+  Widget build(BuildContext context) {
+    final featured = activities.first;
+    final supporting = activities.skip(1).take(4).toList();
+    return Column(
+      children: [
+        _ActivityFeaturedCard(activity: featured),
+        if (supporting.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          _BentoPair(
+            left: supporting[0],
+            right: supporting.length > 1 ? supporting[1] : supporting[0],
+          ),
+          if (supporting.length > 2) ...[
+            const SizedBox(height: 12),
+            _BentoPair(
+              left: supporting[2],
+              right: supporting.length > 3 ? supporting[3] : supporting[2],
+            ),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _ActivityFeaturedCard extends StatelessWidget {
+  final TravelActivity activity;
+  const _ActivityFeaturedCard({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 180,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.brandFixedDim,
+                      AppColors.brandPrimary,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              right: -10,
+              top: -10,
+              child: Opacity(
+                opacity: 0.3,
+                child: Text(
+                  activity.emoji,
+                  style: const TextStyle(fontSize: 200),
+                ),
+              ),
+            ),
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.45),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 16,
+              left: 16,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  'TOP PICK',
+                  style: AppType.labelSm.copyWith(color: AppColors.brandDeep),
+                ),
+              ),
+            ),
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 20,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    activity.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppType.headlineLg.copyWith(color: Colors.white),
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Symbols.schedule_rounded,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        activity.duration,
+                        style: AppType.labelMd.copyWith(
+                          color: Colors.white.withValues(alpha: 0.85),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BentoPair extends StatelessWidget {
+  final TravelActivity left;
+  final TravelActivity right;
+
+  const _BentoPair({required this.left, required this.right});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: _SmallActivityCard(activity: left)),
+        const SizedBox(width: 12),
+        Expanded(child: _SmallActivityCard(activity: right)),
+      ],
+    );
+  }
+}
+
+class _SmallActivityCard extends StatelessWidget {
+  final TravelActivity activity;
+  const _SmallActivityCard({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.softWarm,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLow,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            alignment: Alignment.center,
+            child: Text(
+              activity.emoji,
+              style: const TextStyle(fontSize: 22),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            activity.title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppType.bodyMd.copyWith(
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: [
+              Icon(
+                Symbols.schedule_rounded,
+                size: 12,
+                color: AppColors.outline,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  activity.duration,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppType.labelMd.copyWith(
+                    color: AppColors.outline,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -619,43 +1008,36 @@ class _SaveTripSheetState extends State<_SaveTripSheet> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
             Container(
               width: 44,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.border,
+                color: AppColors.outlineVariant,
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Text('Save to Booked Trips', style: AppType.headlineLg),
+                  const SizedBox(height: 6),
                   Text(
-                    'Save to Booked Trips',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textDark,
-                    ),
+                    'You\'ll be able to view, edit, or remove it from\n'
+                    'the Booked Trips page.',
+                    style: AppType.bodySm,
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'You\'ll be able to view, edit, or remove it from\nthe Booked Trips page.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: AppColors.textMuted,
-                      height: 1.5,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
                   TextField(
                     controller: _title,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       labelText: 'Trip Title',
-                      prefixIcon: Icon(HugeIcons.strokeRoundedTag01),
+                      prefixIcon: Icon(
+                        Symbols.label_rounded,
+                        color: AppColors.outline,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -669,10 +1051,10 @@ class _SaveTripSheetState extends State<_SaveTripSheet> {
                       alignLabelWithHint: true,
                     ),
                   ),
-                  const SizedBox(height: 22),
+                  const SizedBox(height: 24),
                   PillButton(
                     label: 'Save Trip',
-                    icon: HugeIcons.strokeRoundedBookmarkAdd01,
+                    icon: Symbols.bookmark_add_rounded,
                     onPressed: () => Navigator.pop(
                       context,
                       _SaveTripResult(_title.text, _notes.text),
@@ -704,29 +1086,25 @@ class _BreakdownRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 16, color: AppColors.tealDark),
-          const SizedBox(width: 10),
+          Icon(icon, size: 18, color: AppColors.brandDeep),
+          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: AppColors.textMuted,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  label.toUpperCase(),
+                  style: AppType.labelSm.copyWith(color: AppColors.outline),
                 ),
+                const SizedBox(height: 2),
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.textDark,
+                  style: AppType.bodySm.copyWith(
+                    color: AppColors.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -734,23 +1112,6 @@ class _BreakdownRow extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String label;
-  const _SectionTitle(this.label);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w700,
-        color: AppColors.textDark,
       ),
     );
   }
@@ -764,28 +1125,29 @@ class _TripDetailsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final transportLabel = BookedTrip.transportLabel(plan.transportMode);
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppColors.softWarm,
       ),
       child: Column(
         children: [
           _BreakdownRow(
-            icon: HugeIcons.strokeRoundedRoute02,
+            icon: Symbols.route_rounded,
             label: 'Coming from',
             value: plan.originLocation.isEmpty ? '—' : plan.originLocation,
           ),
           _BreakdownRow(
-            icon: HugeIcons.strokeRoundedUserMultiple,
+            icon: Symbols.group_rounded,
             label: 'Travelers',
-            value: '${plan.travelers} ${plan.travelers == 1 ? "person" : "people"}',
+            value:
+                '${plan.travelers} ${plan.travelers == 1 ? "person" : "people"}',
           ),
           _BreakdownRow(
             icon: plan.transportMode == 'private'
-                ? HugeIcons.strokeRoundedCar01
-                : HugeIcons.strokeRoundedBus01,
+                ? Symbols.directions_car_rounded
+                : Symbols.directions_bus_rounded,
             label: 'Transport',
             value: transportLabel,
             isLast: true,
@@ -818,18 +1180,11 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
     final showAmount = _splitView ? cost.perPerson : cost.total;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 14,
-            offset: Offset(0, 3),
-          ),
-        ],
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppColors.softWarm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -841,31 +1196,25 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      _splitView ? 'Per Person' : 'Total Trip',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textMuted,
+                      _splitView ? 'PER PERSON' : 'TOTAL TRIP',
+                      style: AppType.labelSm.copyWith(
+                        color: AppColors.brandDeep,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 6),
                     Text(
                       fmt.format(showAmount),
-                      style: TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.tealDark,
+                      style: AppType.headlineXl.copyWith(
+                        color: AppColors.brandDeep,
+                        fontSize: 32,
                       ),
                     ),
                     const SizedBox(height: 2),
                     Text(
                       _splitView
-                          ? 'Split among ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}'
+                          ? 'Split among ${cost.travelers}'
                           : 'For ${cost.travelers} ${cost.travelers == 1 ? "person" : "people"}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.textMuted,
-                      ),
+                      style: AppType.bodySm,
                     ),
                   ],
                 ),
@@ -876,59 +1225,67 @@ class _CostEstimateCardState extends State<_CostEstimateCard> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          Divider(color: AppColors.border, height: 1),
-          const SizedBox(height: 12),
-          for (final item in cost.items) ...[
-            Row(
+          const SizedBox(height: 16),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceLow,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
               children: [
-                Expanded(
-                  child: Text(
-                    item.label,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.textDark,
-                    ),
+                for (int i = 0; i < cost.items.length; i++) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          cost.items[i].label,
+                          style: AppType.bodySm.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                      ),
+                      Text(
+                        fmt.format(_splitView
+                            ? cost.items[i].amount / cost.travelers
+                            : cost.items[i].amount),
+                        style: AppType.labelMd.copyWith(
+                          color: AppColors.onSurface,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                Text(
-                  fmt.format(_splitView
-                      ? item.amount / cost.travelers
-                      : item.amount),
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textDark,
-                  ),
-                ),
+                  if (i < cost.items.length - 1) const SizedBox(height: 10),
+                ],
               ],
             ),
-            const SizedBox(height: 8),
-          ],
-          const SizedBox(height: 4),
+          ),
+          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: AppColors.tealMuted,
-              borderRadius: BorderRadius.circular(12),
+              color: AppColors.brandSoft.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
               children: [
                 Icon(
-                  HugeIcons.strokeRoundedInformationCircle,
+                  Symbols.info_rounded,
                   size: 14,
-                  color: AppColors.tealDark,
+                  color: AppColors.brandDeep,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     _splitView
                         ? 'Each traveler chips in around ${fmt.format(cost.perPerson)}.'
-                        : 'Estimate is rough — actual costs vary by season and choices.',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.tealDark,
-                      height: 1.4,
+                        : 'Estimate is rough — actual costs vary by season.',
+                    style: AppType.labelMd.copyWith(
+                      color: AppColors.brandDeep,
+                      letterSpacing: 0,
                     ),
                   ),
                 ),
@@ -950,11 +1307,10 @@ class _SplitToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: AppColors.bgCream,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceLow,
+        borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -989,21 +1345,21 @@ class _SplitToggleChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(999),
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: selected ? AppColors.tealPrimary : Colors.transparent,
-          borderRadius: BorderRadius.circular(18),
+          color: selected ? AppColors.brandPrimary : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+          boxShadow: selected ? AppColors.ctaGlow : null,
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: selected ? Colors.white : AppColors.textMuted,
+          style: AppType.labelMd.copyWith(
+            color: selected ? AppColors.onBrand : AppColors.onSurfaceVariant,
+            letterSpacing: 0,
           ),
         ),
       ),
@@ -1019,26 +1375,30 @@ class _RouteDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     final r = plan.routeInfo;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
+        color: AppColors.surfaceCard,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: AppColors.softWarm,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(HugeIcons.strokeRoundedBus01,
-                  size: 16, color: AppColors.tealDark),
-              const SizedBox(width: 6),
-              Text(
-                '${r.fromHub}  →  ${r.toDestination}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+              Icon(
+                Symbols.directions_bus_rounded,
+                size: 18,
+                color: AppColors.brandDeep,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${r.fromHub}  →  ${r.toDestination}',
+                  style: AppType.bodyMd.copyWith(
+                    color: AppColors.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ],
@@ -1046,69 +1406,64 @@ class _RouteDetails extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             '${r.transportMode} • ${r.estimatedTravel}',
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textMuted,
-            ),
+            style: AppType.bodySm,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           for (int i = 0; i < r.steps.length; i++) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 18,
-                  height: 18,
+                  width: 22,
+                  height: 22,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.tealPrimary,
-                    borderRadius: BorderRadius.circular(9),
+                    color: AppColors.brandPrimary,
+                    shape: BoxShape.circle,
                   ),
                   child: Text(
                     '${i + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
+                    style: TextStyle(
+                      color: AppColors.onBrand,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 Expanded(
-                  child: Text(
-                    r.steps[i],
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      color: AppColors.textDark,
-                      height: 1.35,
-                    ),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: Text(r.steps[i], style: AppType.bodySm),
                   ),
                 ),
               ],
             ),
-            if (i < r.steps.length - 1) const SizedBox(height: 6),
+            if (i < r.steps.length - 1) const SizedBox(height: 10),
           ],
           if (plan.trafficAware) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: 14),
             Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 8),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF3E0),
-                borderRadius: BorderRadius.circular(10),
+                color: AppColors.warnBg,
+                borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
-                  const Icon(HugeIcons.strokeRoundedAlert02,
-                      size: 14, color: Color(0xFFD97706)),
-                  const SizedBox(width: 6),
+                  Icon(
+                    Symbols.warning_rounded,
+                    size: 16,
+                    color: AppColors.warnIcon,
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       r.trafficAdvisory,
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        color: Color(0xFF92400E),
-                        height: 1.4,
+                      style: AppType.labelMd.copyWith(
+                        color: AppColors.warnText,
+                        letterSpacing: 0,
                       ),
                     ),
                   ),

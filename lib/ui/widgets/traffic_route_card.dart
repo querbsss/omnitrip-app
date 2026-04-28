@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hugeicons/hugeicons.dart';
+import 'package:material_symbols_icons/material_symbols_icons.dart';
 
 import '../../core/colors.dart';
+import '../../core/typography.dart';
 import '../../data/models/route_info.dart';
 
 class TrafficRouteCard extends StatelessWidget {
@@ -20,86 +21,97 @@ class TrafficRouteCard extends StatelessWidget {
       children: [
         Expanded(
           child: Container(
-            height: 96,
-            padding: const EdgeInsets.all(12),
+            height: 120,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.cardWhite,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.shadow,
-                  blurRadius: 10,
-                  offset: Offset(0, 2),
+              color: AppColors.surfaceCard,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: AppColors.softWarm,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'TRAFFIC',
+                  style: AppType.labelSm.copyWith(
+                    color: AppColors.brandDeep,
+                  ),
                 ),
+                const SizedBox(height: 6),
+                Expanded(child: const _BarsArt()),
               ],
             ),
-            child: const _BarsArt(),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
           child: InkWell(
             onTap: onOpenMap,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(24),
             child: Container(
-              height: 96,
+              height: 120,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.border),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.shadow,
-                    blurRadius: 10,
-                    offset: Offset(0, 2),
-                  ),
-                ],
-                gradient: const LinearGradient(
+                borderRadius: BorderRadius.circular(24),
+                gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: [Color(0xFFE7F1EC), Color(0xFFD7E4DD)],
+                  colors: [
+                    AppColors.brandSoft,
+                    AppColors.brandFixedDim.withValues(alpha: 0.6),
+                  ],
                 ),
+                boxShadow: AppColors.softWarm,
               ),
               child: Stack(
                 children: [
                   Positioned.fill(child: CustomPaint(painter: _RouteArt())),
                   Positioned(
-                    right: 8,
-                    top: 8,
+                    right: 12,
+                    top: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                          horizontal: 12, vertical: 5),
                       decoration: BoxDecoration(
-                        color: AppColors.tealPrimary,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.brandPrimary,
+                        borderRadius: BorderRadius.circular(999),
+                        boxShadow: AppColors.ctaGlow,
                       ),
                       child: Text(
                         route.estimatedTrafficMin,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
+                        style: AppType.labelMd.copyWith(
+                          color: AppColors.onBrand,
+                          letterSpacing: 0.3,
                         ),
                       ),
                     ),
                   ),
                   Positioned(
-                    left: 10,
-                    bottom: 8,
-                    child: Row(
-                      children: [
-                        Icon(HugeIcons.strokeRoundedMaps,
-                            size: 14, color: AppColors.tealDark),
-                        SizedBox(width: 4),
-                        Text(
-                          'Open Map',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.tealDark,
+                    left: 14,
+                    bottom: 12,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.85),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Symbols.map_rounded,
+                            size: 14,
+                            color: AppColors.brandDeep,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            'Open Map',
+                            style: AppType.labelMd.copyWith(
+                              color: AppColors.brandDeep,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -131,8 +143,15 @@ class _BarsArt extends StatelessWidget {
                 alignment: Alignment.bottomCenter,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.tealPrimary.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(4),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        AppColors.brandPrimary,
+                        AppColors.brandDeep,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -147,9 +166,10 @@ class _RouteArt extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppColors.tealDark.withValues(alpha: 0.6)
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
+      ..color = AppColors.brandDeep.withValues(alpha: 0.55)
+      ..strokeWidth = 2.4
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
     final path = Path()
       ..moveTo(size.width * 0.1, size.height * 0.85)
       ..quadraticBezierTo(
@@ -166,9 +186,9 @@ class _RouteArt extends CustomPainter {
       );
     canvas.drawPath(path, paint);
 
-    final dot = Paint()..color = AppColors.tealDark;
-    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.85), 3.5, dot);
-    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.25), 3.5, dot);
+    final dot = Paint()..color = AppColors.brandDeep;
+    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.85), 4, dot);
+    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.25), 4, dot);
   }
 
   @override
