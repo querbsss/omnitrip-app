@@ -101,10 +101,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                       const SizedBox(height: 24),
-                      _ProfileHeader(
-                        user: _user,
-                        avatar: _avatar,
-                        onPickAvatar: _pickAvatar,
+                      Center(
+                        child: _ProfileHeader(
+                          user: _user,
+                          avatar: _avatar,
+                          onPickAvatar: _pickAvatar,
+                        ),
                       ),
                       const SizedBox(height: 24),
                       Row(
